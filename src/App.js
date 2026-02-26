@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Users, ListTodo, RefreshCw } from 'lucide-react';
+import { Home, Users, ListTodo, RefreshCw, BarChart2, Clock, CheckSquare } from 'lucide-react';
 
 export default function App() {
   const [taskData, setTaskData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  // Ganti dengan URL Deployment terbaru kamu!
+  
+  // GUNAKAN URL WEB APP TERBARU DARI LANGKAH 1 DI SINI
   const webAppUrl = "https://script.google.com/macros/s/AKfycbzzMP2mf3YQH0O02CRzHAZnEVKy8RJ4uV9QnTxDI17JCHLgiYvH7a-7ZdFN8pojZg/exec";
 
   const fetchData = async () => {
@@ -14,7 +15,7 @@ export default function App() {
       const data = await response.json();
       setTaskData(data);
     } catch (error) {
-      console.error("Gagal ambil data:", error);
+      console.error("Gagal menarik data:", error);
     } finally {
       setIsLoading(false);
     }
@@ -22,15 +23,19 @@ export default function App() {
 
   const toggleStatus = async (rowId, currentStatus) => {
     const newStatus = currentStatus === 'Done' ? 'Pending' : 'Done';
+    // Update tampilan secara instan (Optimistic UI)
     setTaskData(prev => prev.map(t => t.id === rowId ? { ...t, ceklis: newStatus } : t));
+    
     try {
       await fetch(webAppUrl, {
         method: 'POST',
         mode: 'no-cors', 
         body: JSON.stringify({ rowId, newStatus })
       });
+      // Sinkronisasi ulang setelah 2 detik
       setTimeout(fetchData, 2000);
     } catch (error) {
+      console.error("Gagal update status");
       fetchData();
     }
   };
@@ -43,26 +48,33 @@ export default function App() {
 
   return (
     <div className="flex h-screen bg-[#1c1c1e] text-gray-300 font-sans">
+      {/* SIDEBAR */}
       <aside className="w-[240px] bg-[#222225] border-r border-white/5 p-6 hidden md:block">
         <h1 className="text-white font-bold text-xl mb-10 tracking-tight">HR DASHBOARD</h1>
         <nav className="space-y-4">
-          <div className="flex items-center gap-3 text-blue-400 bg-blue-500/10 p-2 rounded-lg"><Home size={18}/> Dashboard</div>
+          <div className="flex items-center gap-3 text-blue-400 bg-blue-500/10 p-2 rounded-lg cursor-default"><Home size={18}/> Dashboard</div>
           <div className="flex items-center gap-3 text-gray-500 p-2 hover:bg-white/5 rounded-lg cursor-pointer transition-all"><Users size={18}/> Team Task</div>
         </nav>
       </aside>
 
+      {/* MAIN CONTENT */}
       <main className="flex-1 overflow-y-auto p-6 md:p-10 bg-[#1c1c1e]">
-        <div className="max-w-6xl mx-auto space-y-6">
-          <header className="flex justify-between items-center">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <header className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-2xl font-bold text-white tracking-tight">Daily Schedule 2026</h1>
-              <p className="text-gray-400 text-sm">Monitoring task dari tab "All 2026"</p>
+              <p className="text-gray-400 text-sm italic">Monitoring task aktif dari tab "All 2026"</p>
             </div>
-            <button onClick={fetchData} className="bg-[#2b2b36] p-3 rounded-full hover:bg-[#3f3f46] transition-all active:scale-95 shadow-lg border border-white/5">
-              <RefreshCw size={20} className={isLoading ? "animate-spin text-blue-400" : "text-white"} />
+            <button 
+              onClick={fetchData} 
+              className="bg-[#2b2b36] p-3 rounded-full hover:bg-[#3f3f46] transition-all active:scale-95 border border-white/5"
+              disabled={isLoading}
+            >
+              <RefreshCw size={20} className={`${isLoading ? "animate-spin text-blue-400" : "text-white"}`} />
             </button>
           </header>
 
+          {/* RINGKASAN DATA */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <MetricCard label="TOTAL TASK" value={totalTasks} color="bg-blue-500" />
             <MetricCard label="DONE" value={completedTasks} color="bg-emerald-500" />
@@ -70,32 +82,35 @@ export default function App() {
             <MetricCard label="PROGRESS" value={`${progressPercent}%`} color="bg-amber-500" />
           </div>
 
-          <div className="bg-[#242427] rounded-xl border border-white/5 overflow-hidden shadow-2xl">
+          {/* TABEL DATA LIVE */}
+          <div className="bg-[#242427] rounded-xl border border-white/5 overflow-hidden shadow-2xl mt-8">
             <div className="p-4 border-b border-white/5 bg-white/5 flex items-center gap-2">
               <ListTodo size={16} className="text-blue-400"/>
-              <h3 className="text-xs font-bold text-white uppercase tracking-widest">Live Task Monitor</h3>
+              <h3 className="text-xs font-bold text-white uppercase tracking-widest">Daftar Tugas Karyawan</h3>
             </div>
-            <div className="divide-y divide-white/5 overflow-x-auto">
+            
+            <div className="divide-y divide-white/5">
               {isLoading && taskData.length === 0 ? (
-                <div className="p-20 text-center text-gray-500 italic">Menyambungkan ke database...</div>
+                <div className="p-20 text-center text-gray-500 italic">Mencoba menghubungi database Google Sheets...</div>
+              ) : taskData.length === 0 ? (
+                <div className="p-20 text-center text-gray-500 italic">Tidak ada data ditemukan di tab "All 2026".</div>
               ) : (
                 taskData.map((task) => (
                   <div key={task.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/[0.02] gap-4">
-                    <div className="flex gap-4 items-start flex-1">
-                      <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${task.ceklis === 'Done' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                    <div className="flex gap-4 items-start">
+                      <div className={`mt-1.5 w-2.5 h-2.5 rounded-full flex-shrink-0 ${task.ceklis === 'Done' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'}`} />
                       <div className="space-y-1">
                         <p className={`text-sm font-semibold ${task.ceklis === 'Done' ? 'text-gray-500 line-through' : 'text-gray-100'}`}>{task.taskList}</p>
-                        <p className="text-[11px] text-gray-400 leading-relaxed italic">{task.detailTindakan}</p>
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          <span className="text-[9px] px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20">{task.hariTanggal}</span>
-                          <span className="text-[9px] px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded border border-purple-500/20">{task.kategori}</span>
-                          {task.urgent === 'Y' && <span className="text-[9px] px-2 py-0.5 bg-red-500/20 text-red-400 rounded font-bold">URGENT</span>}
+                        <p className="text-[11px] text-gray-500 leading-relaxed max-w-md">{task.detailTindakan}</p>
+                        <div className="flex gap-2 pt-1">
+                           <span className="text-[9px] px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded border border-blue-500/20">{task.hariTanggal}</span>
+                           <span className="text-[9px] px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded border border-purple-500/20">{task.kategori}</span>
                         </div>
                       </div>
                     </div>
                     <button 
                       onClick={() => toggleStatus(task.id, task.ceklis)}
-                      className={`text-[10px] font-black px-5 py-2 rounded-md border transition-all uppercase tracking-tighter w-full md:w-24 ${
+                      className={`text-[10px] font-black px-4 py-2 rounded-md border transition-all uppercase w-full md:w-28 ${
                         task.ceklis === 'Done' 
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
                         : 'bg-red-500 text-white border-red-600 hover:bg-red-600 shadow-lg shadow-red-500/20'
@@ -118,7 +133,7 @@ function MetricCard({ label, value, color }) {
   return (
     <div className="bg-[#242427] p-5 rounded-xl border border-white/5 text-center shadow-lg">
       <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest mb-2">{label}</p>
-      <p className="text-3xl font-bold text-white mb-3 tracking-tighter">{value}</p>
+      <p className="text-3xl font-bold text-white mb-3">{value}</p>
       <div className={`h-1.5 w-10 mx-auto rounded-full ${color}`} />
     </div>
   );
