@@ -1,42 +1,1003 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <meta name="theme-color" content="#000000" />
-    <!--
-      manifest.json provides metadata used when your web app is added to the
-      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HRFlow — Araw | Logique</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#f4f3f0;--bg1:#ffffff;--bg2:#f9f8f6;--bg3:#eeede9;
+  --tx1:#1c1b18;--tx2:#5a5955;--tx3:#a8a7a2;
+  --bd:#e5e4e0;--bd2:#d0cfc9;
+  --acc:#6C63D4;--acc-bg:#EEEDFE;--acc-tx:#3C3489;
+  --grn:#1a9e72;--grn-bg:#e0f5ee;--grn-tx:#07503a;
+  --red:#c85428;--red-bg:#faeae6;--red-tx:#8f3319;
+  --ylw:#b07010;--ylw-bg:#faecd8;--ylw-tx:#7a4e08;
+  --blu:#2e7dd6;--blu-bg:#e4f0fb;--blu-tx:#0c4480;
+  --sidebar-w:220px;--radius:10px;--radius-lg:14px;
+}
+.dark{
+  --bg0:#151513;--bg1:#1e1e1b;--bg2:#252522;--bg3:#2e2e2a;
+  --tx1:#f0efe9;--tx2:#9a9992;--tx3:#5a5955;
+  --bd:#333330;--bd2:#444440;
+  --acc-bg:#1e1b4a;--acc-tx:#a09ae8;
+  --grn-bg:#072a1e;--grn-tx:#4dcaa0;
+  --red-bg:#2e1208;--red-tx:#e8896a;
+  --ylw-bg:#261800;--ylw-tx:#e8b855;
+  --blu-bg:#071c38;--blu-tx:#6ab0ed;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg0);color:var(--tx1);font-size:13px;line-height:1.5;transition:background .2s,color .2s;-webkit-font-smoothing:antialiased}
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:var(--bg1);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0}
+.logo{padding:18px 16px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.logo-mark{display:flex;align-items:center;gap:8px}
+.logo-icon{width:28px;height:28px;background:var(--acc);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:14px;height:14px;fill:#fff}
+.logo-text{font-size:14px;font-weight:600;color:var(--tx1)}
+.logo-sub{font-size:9.5px;color:var(--tx3);margin-top:1px}
+.theme-btn{width:26px;height:26px;border-radius:7px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px}
+.nav{padding:10px 8px;flex:1;overflow-y:auto;scrollbar-width:thin}
+.nl{font-size:9.5px;color:var(--tx3);padding:10px 8px 4px;letter-spacing:.07em;text-transform:uppercase;font-weight:500}
+.ni{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--tx2);transition:all .12s}
+.ni:hover{background:var(--bg2);color:var(--tx1)}
+.ni.active{background:var(--acc-bg);color:var(--acc-tx);font-weight:500}
+.ni-icon{width:15px;height:15px;flex-shrink:0;opacity:.65}
+.ni.active .ni-icon{opacity:1}
+.pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ni-badge{margin-left:auto;background:var(--red-bg);color:var(--red-tx);border-radius:9px;padding:1px 5px;font-size:9.5px;font-weight:600}
+.integ-section{padding:10px 14px 12px;border-top:1px solid var(--bd)}
+.integ-title{font-size:9.5px;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;font-weight:500}
+.integ-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx2);margin-bottom:5px}
+.idot{width:6px;height:6px;border-radius:50%}
+.soon-pill{font-size:9px;padding:1px 5px;border-radius:6px;background:var(--ylw-bg);color:var(--ylw-tx);margin-left:auto;font-weight:500}
+.user-box{padding:10px 12px;border-top:1px solid var(--bd);display:flex;align-items:center;gap:8px}
+.ava{width:30px;height:30px;border-radius:50%;background:var(--acc-bg);color:var(--acc-tx);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.uname{font-size:12px;font-weight:500;color:var(--tx1)}
+.urole{font-size:10px;color:var(--tx3)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--bg1);border-bottom:1px solid var(--bd);padding:11px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tb-left h1{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.tb-left p{font-size:11.5px;color:var(--tx2);margin-top:1px}
+.tb-right{display:flex;gap:6px}
+.btn{padding:6px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--bg1);font-size:12px;cursor:pointer;color:var(--tx1);font-family:'DM Sans',sans-serif;transition:all .12s;white-space:nowrap}
+.btn:hover{background:var(--bg2)}
+.btn.primary{background:var(--acc);color:#fff;border-color:transparent;font-weight:500}
+.btn.primary:hover{opacity:.88}
+.btn.gem{background:var(--tx1);color:var(--bg1);border-color:transparent;font-weight:500}
+.btn.gem:hover{opacity:.85}
+.content{flex:1;overflow-y:auto;padding:16px 20px;scrollbar-width:thin}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--radius);padding:12px 14px}
+.stat-lbl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;font-weight:500}
+.stat-val{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1}
+.stat-note{font-size:10.5px;color:var(--tx2);margin-top:5px}
+.ai-brief{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:14px;position:relative}
+.ai-brief::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--acc),#a78bfa,var(--blu));border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+.ai-header{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.ai-orb{width:30px;height:30px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;flex-shrink:0}
+.ai-title{font-size:13px;font-weight:600;color:var(--tx1)}
+.ai-date{font-size:10.5px;color:var(--tx3)}
+.ai-body{font-size:12.5px;color:var(--tx2);line-height:1.7;margin-bottom:11px}
+.ai-chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:4px 10px;border-radius:20px;background:var(--bg2);border:1px solid var(--bd);font-size:11px;cursor:pointer;color:var(--tx2);transition:all .12s;font-family:'DM Sans',sans-serif}
+.chip:hover{background:var(--acc-bg);color:var(--acc-tx);border-color:var(--acc-bg)}
+.panels{display:grid;grid-template-columns:1fr 295px;gap:12px}
+.panel{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--radius-lg);overflow:hidden}
+.ph{padding:11px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.ph-title{font-size:12.5px;font-weight:500;color:var(--tx1)}
+.ph-link{font-size:11px;color:var(--acc-tx);cursor:pointer;font-weight:500}
+.tr{display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid var(--bd);gap:8px;cursor:pointer;transition:background .1s}
+.tr:hover{background:var(--bg2)}
+.tr:last-child{border-bottom:none}
+.chk{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--bd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .15s}
+.chk.done{background:var(--grn);border-color:var(--grn);color:#fff}
+.tname{flex:1;font-size:12.5px;color:var(--tx1);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tname.done{text-decoration:line-through;color:var(--tx3)}
+.ptag{font-size:10px;padding:2px 7px;border-radius:5px;white-space:nowrap;font-weight:500}
+.dtag{font-size:10.5px;color:var(--tx3);white-space:nowrap;min-width:55px;text-align:right}
+.prio{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:500;white-space:nowrap}
+.ph-prio{background:var(--red-bg);color:var(--red-tx)}
+.pm-prio{background:var(--ylw-bg);color:var(--ylw-tx)}
+.pl-prio{background:var(--grn-bg);color:var(--grn-tx)}
+.pbar{background:var(--bg3);border-radius:4px;height:4px;width:46px;overflow:hidden;flex-shrink:0}
+.pbar-fill{height:100%;border-radius:4px;background:var(--grn)}
+.pct{font-size:10px;color:var(--tx3);min-width:24px;text-align:right}
+.proj-item{padding:11px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px}
+.proj-item:last-child{border-bottom:none}
+.proj-info{flex:1;min-width:0}
+.proj-name{font-size:12.5px;font-weight:500;color:var(--tx1)}
+.proj-meta{font-size:10.5px;color:var(--tx3);margin-top:1px}
+.proj-bar{height:3px;background:var(--bg3);border-radius:3px;margin-top:6px;overflow:hidden}
+.proj-bar-fill{height:100%;border-radius:3px}
+.proj-pct{font-size:12px;font-weight:600;color:var(--tx2);min-width:32px;text-align:right}
+.news-item{padding:10px 14px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .1s}
+.news-item:hover{background:var(--bg2)}
+.news-item:last-child{border-bottom:none}
+.ncat{font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:5px;display:inline-block;margin-bottom:4px}
+.ntitle{font-size:12px;font-weight:500;color:var(--tx1);line-height:1.4;margin-bottom:2px}
+.nsumm{font-size:11px;color:var(--tx2);line-height:1.45;margin-bottom:3px}
+.nmeta{font-size:10px;color:var(--tx3)}
+.kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}
+.kh{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx2);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.kcnt{background:var(--bg2);border:1px solid var(--bd);border-radius:7px;padding:1px 6px;font-size:9.5px;color:var(--tx3)}
+.kcard{background:var(--bg1);border:1px solid var(--bd);border-radius:9px;padding:9px 10px;margin-bottom:6px}
+.kcard:hover{border-color:var(--bd2)}
+.kcard-title{font-size:11.5px;font-weight:500;color:var(--tx1);margin-bottom:5px;line-height:1.35}
+.kcard-meta{font-size:10px;color:var(--tx3)}
+.kcard-bar{height:3px;background:var(--bg3);border-radius:3px;margin-top:7px;overflow:hidden}
+.kcard-bar-fill{height:100%;border-radius:3px;background:var(--grn)}
+.kcard:active{cursor:grabbing}
+.kcard{transition:box-shadow .15s,transform .1s}
+.kcard:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);transform:translateY(-1px)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200}
+.modal{background:var(--bg1);border:1px solid var(--bd);border-radius:var(--radius-lg);padding:20px;width:340px}
+.modal h3{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--tx1)}
+.field{margin-bottom:9px}
+.field label{font-size:11px;color:var(--tx2);display:block;margin-bottom:3px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg2);font-size:12.5px;color:var(--tx1);font-family:'DM Sans',sans-serif;outline:none;transition:border .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--acc)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modal-btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+.loading-pulse{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body>
-    <noscript> You need to enable JavaScript to run this app. </noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+/* Slider Custom */
+input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--acc); cursor: pointer; margin-top: -6px; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--bd2); border-radius: 2px; }
+input[type=range]:focus { outline: none; }
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+/* STYLING UNTUK MARKDOWN (RICH TEXT) */
+.md-content { font-size: 12.5px; color: var(--tx2); line-height: 1.6; }
+.md-content p { margin-bottom: 12px; }
+.md-content p:last-child { margin-bottom: 0; }
+.md-content strong { color: var(--tx1); font-weight: 600; }
+.md-content ul, .md-content ol { margin-bottom: 12px; padding-left: 20px; }
+.md-content li { margin-bottom: 6px; }
+.md-content h1, .md-content h2, .md-content h3 { color: var(--tx1); margin-top: 18px; margin-bottom: 8px; font-weight: 600; line-height: 1.3; }
+.md-content h3 { font-size: 14px; }
+.md-content a { color: var(--blu); text-decoration: none; }
+.md-content a:hover { text-decoration: underline; }
+.md-content code { background: var(--bg2); padding: 2px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 11.5px; border: 1px solid var(--bd); }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">
+        <div class="logo-icon"><svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zm7 0h5v5H9zM2 9h5v5H2zm7 3.5a2.5 2.5 0 105 0 2.5 2.5 0 00-5 0z"/></svg></div>
+        <div><div class="logo-text">HRFlow</div><div class="logo-sub">Logique · HC Workspace</div></div>
+      </div>
+      <div class="theme-btn" onclick="toggleDark()" id="theme-btn">🌙</div>
+    </div>
+    <div class="nav">
+      <div class="nl">Workspace</div>
+      <div class="ni active" id="nav-dashboard" onclick="nav('dashboard')">
+        <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+        Dashboard
+      </div>
+      <div class="ni" id="nav-tasks" onclick="nav('tasks')">
+        <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zm0 3.5h12V9H2zm0 3.5h8v1.5H2z"/></svg>
+        My Tasks <span class="ni-badge" id="open-cnt">0</span>
+      </div>
+      <div class="ni" id="nav-kanban" onclick="nav('kanban')">
+        <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="4" height="14" rx="1"/><rect x="6" y="1" width="4" height="10" rx="1"/><rect x="11" y="1" width="4" height="12" rx="1"/></svg>
+        Kanban Board
+      </div>
+      <div class="ni" id="nav-projects" onclick="nav('projects')">
+        <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 3a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V3zm2 0v10h10V3H3z"/></svg>
+        Projects
+      </div>
+      <div class="ni" id="nav-news" onclick="nav('news')">
+        <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zm1 2v2h10V4H3zm0 4v1.5h10V8H3zm0 3v1.5h6V11H3z"/></svg>
+        HC News & Learn
+      </div>
+      
+      <div class="nl">Projects</div>
+      <div id="sidebar-projects-container"></div>
+      
+    </div>
+    <div class="integ-section">
+      <div class="integ-title">Integrations</div>
+      <div class="integ-row"><div class="idot" style="background:#34A853"></div>Google Calendar<span class="soon-pill">Soon</span></div>
+      <div class="integ-row"><div class="idot" style="background:#EA4335"></div>Gmail<span class="soon-pill">Soon</span></div>
+      <div class="integ-row"><div class="idot" style="background:#4285F4"></div>Google Drive<span class="soon-pill">Soon</span></div>
+      <div class="integ-row"><div class="idot" style="background:#0052CC"></div>Jira / Trello<span class="soon-pill">Soon</span></div>
+      <div class="integ-row"><div class="idot" style="background:#E01E5A"></div>Slack<span class="soon-pill">Soon</span></div>
+    </div>
+    <div class="user-box">
+      <div class="ava">AR</div>
+      <div><div class="uname">Araw</div><div class="urole">HC · Logique</div></div>
+    </div>
+  </div>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <h1 id="pg-title">Dashboard</h1>
+        <p id="pg-sub">Loading...</p>
+      </div>
+      <div class="tb-right">
+        <button class="btn" onclick="nav('news')">📰 HC News</button>
+        <button class="btn gem" onclick="triggerBriefing(true)">✦ Gemini Briefing</button>
+        <button class="btn primary" onclick="openModal()">+ Add Task</button>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" style="display:none" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h3 id="tm-title">Tambah Task Baru</h3>
+    <input type="hidden" id="f-id">
+    <div class="field"><label>Nama task *</label><input id="f-name" placeholder="e.g. Review CV kandidat Frontend"></div>
+    <div class="field"><label>Project</label>
+      <select id="f-proj"></select>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Due date</label><input type="date" id="f-due"></div>
+      <div class="field"><label>Priority</label>
+        <select id="f-prio"><option value="high">High</option><option value="med" selected>Medium</option><option value="low">Low</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="f-notes" rows="2" style="resize:none" placeholder="Catatan tambahan..."></textarea></div>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal()">Batal</button>
+      <button class="btn primary" onclick="saveTask()">Simpan Task</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="progress-modal" style="display:none; z-index:400" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" style="width:280px">
+    <h3 style="font-size:14px; margin-bottom:12px; color:var(--tx1)">Update Progress</h3>
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px">
+      <input type="range" id="prog-slider" min="0" max="100" style="flex:1" oninput="document.getElementById('prog-val').textContent=this.value+'%'">
+      <span id="prog-val" style="font-size:14px; font-weight:600; width:45px; text-align:right; color:var(--acc)">0%</span>
+    </div>
+    <div class="modal-btns">
+      <button class="btn" onclick="document.getElementById('progress-modal').style.display='none'">Batal</button>
+      <button class="btn primary" onclick="saveCustomProgress()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detail-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal" style="width: 480px; max-width: 90vw;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+      <h3 id="dm-title" style="margin-bottom:0; font-size:14px; font-weight:600; color:var(--tx1);">Detail</h3>
+      <button class="btn" onclick="document.getElementById('detail-modal').style.display='none'" style="padding:2px 8px; font-size: 10px;">✕</button>
+    </div>
+    <div id="dm-meta" style="font-size:11px; color:var(--tx3); margin-bottom:12px;"></div>
+    <div id="dm-content" style="max-height:60vh; overflow-y:auto; margin-bottom:16px;"></div>
+    <div class="modal-btns" id="dm-action-container" style="justify-content:flex-end;">
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="project-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <h3 id="pm-title">Tambah Project Baru</h3>
+    <input type="hidden" id="pm-id">
+    <div class="field"><label>Nama Project *</label><input id="pm-name" placeholder="e.g. Recruitment 2024"></div>
+    <div class="grid2">
+      <div class="field"><label>Deadline</label><input type="date" id="pm-due"></div>
+      <div class="field"><label>Warna Tema</label><input type="color" id="pm-color" value="#6C63D4" style="height:34px;padding:2px;width:100%"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn" onclick="document.getElementById('project-modal').style.display='none'">Batal</button>
+      <button class="btn primary" onclick="saveProject()">Simpan Project</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// STATE
+let dark=false,view='dashboard',briefText='',briefLoading=false,newsItems=[],newsLoading=false;
+let currentProgTaskId = null; 
+
+const today=new Date();
+const todayISO=today.toISOString().split('T')[0];
+const todayFmt=today.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+const catStyle={'HC':'background:var(--acc-bg);color:var(--acc-tx)','Gen-AI':'background:var(--grn-bg);color:var(--grn-tx)','Learning':'background:var(--ylw-bg);color:var(--ylw-tx)','Industry':'background:var(--blu-bg);color:var(--blu-tx)','System':'background:var(--red-bg);color:var(--red-tx)'};
+
+// ── URL Google Apps Script ──
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwFrlKUVAPQfXCqdrA0RAr6IImrQzKhUBzJQ3TIRjXScLK6_lvRZxVa6xH6owf_i8mKcw/exec';
+const HAS_DB  = GAS_URL !== 'MASUKKAN_APPS_SCRIPT_URL_DISINI';
+
+let tasks=[];
+let projects=[];
+
+function updateProjectUI() {
+  const select = document.getElementById('f-proj');
+  if(select) {
+    select.innerHTML = projects.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+  }
+  const sidebarContainer = document.getElementById('sidebar-projects-container');
+  if(sidebarContainer) {
+    sidebarContainer.innerHTML = projects.map(p => `
+      <div class="ni"><div class="pdot" style="background:${p.color}"></div>${p.name}</div>
+    `).join('');
+  }
+}
+
+function getProjStyle(projName) {
+  const p = projects.find(x => x.name === projName);
+  if(!p) return 'background:var(--bg2);color:var(--tx2)';
+  return `background:${p.color}26; color:${p.color}; border: 1px solid ${p.color}4D;`;
+}
+
+async function dbGet(action){
+  if(!HAS_DB)return null;
+  try{const r=await fetch(GAS_URL+'?action='+action);return await r.json();}catch(e){return null;}
+}
+async function dbPost(body){
+  if(!HAS_DB)return null;
+  try{const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(body)});return await r.json();}catch(e){return null;}
+}
+async function loadFromDB(){
+  if(!HAS_DB)return;
+  showDBStatus('Memuat data...');
+  const pres=await dbGet('getProjects');
+  if(pres&&pres.projects&&pres.projects.length>0) projects=pres.projects;
+  const res=await dbGet('getTasks');
+  if(res&&res.tasks&&res.tasks.length>0) tasks=res.tasks;
+  updateProjectUI(); 
+  hideDBStatus();
+  updateBadge();
+  render();
+}
+
+function showDBStatus(msg){
+  let el=document.getElementById('db-status');
+  if(!el){el=document.createElement('div');el.id='db-status';el.style.cssText='position:fixed;bottom:16px;right:16px;background:var(--tx1);color:var(--bg1);padding:8px 14px;border-radius:8px;font-size:12px;z-index:999';document.body.appendChild(el);}
+  el.textContent=msg;el.style.display='block';
+}
+function hideDBStatus(){const el=document.getElementById('db-status');if(el)el.style.display='none';}
+
+function isToday(d){if(!d)return false;const a=new Date(d),b=new Date();a.setHours(0,0,0,0);b.setHours(0,0,0,0);return a.getTime()===b.getTime()}
+function isOverdue(d){if(!d)return false;const a=new Date(d),b=new Date();a.setHours(0,0,0,0);b.setHours(0,0,0,0);return a<b}
+
+function fmtDue(d){
+  if(!d)return'—';const dt=new Date(d),t=new Date();dt.setHours(0,0,0,0);t.setHours(0,0,0,0);
+  const diff=Math.round((dt-t)/86400000);
+  if(diff<0)return'<span style="color:var(--red-tx);font-weight:500">Overdue</span>';
+  if(diff===0)return'<span style="color:var(--red-tx);font-weight:500">Hari ini</span>';
+  if(diff===1)return'<span style="color:var(--ylw-tx)">Besok</span>';
+  return dt.toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+}
+
+function fmtDateStr(dString) {
+  if(!dString) return '—';
+  const clean = dString.replace(/T.*/, ''); 
+  const d = new Date(clean);
+  if(isNaN(d.getTime())) return clean;
+  return d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
+}
+
+function updateBadge(){document.getElementById('open-cnt').textContent=tasks.filter(t=>!t.done).length}
+
+async function callGemini(prompt, requireJson = false){
+  const payload = { contents: [{ parts: [{ text: prompt }] }] };
+  if(requireJson) payload.generationConfig = { responseMimeType: 'application/json' };
+
+  const res = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  if(!res.ok || data.error) throw new Error(data.error?.message || 'Gagal menghubungi Gemini');
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+const CACHE_KEY_BRIEF = 'hrflow_brief';
+const CACHE_KEY_NEWS  = 'hrflow_news';
+function getCacheDate(){ return new Date().toISOString().split('T')[0]; }
+function saveCache(key, data){ try{ localStorage.setItem(key, JSON.stringify({ date: getCacheDate(), data })); }catch(e){} }
+function loadCache(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(parsed.date !== getCacheDate()) return null;
+    return parsed.data;
+  }catch(e){ return null; }
+}
+function clearTodayCache(){
+  localStorage.removeItem(CACHE_KEY_BRIEF);
+  localStorage.removeItem(CACHE_KEY_NEWS);
+  briefText=''; newsItems=[];
+  fetchBriefing(); fetchNews();
+  showDBStatus('Cache direset, regenerating...');
+  setTimeout(hideDBStatus, 2000);
+}
+
+async function fetchBriefing(forceRefresh=false){
+  if(briefLoading) return;
+  if(!forceRefresh){
+    const cached = loadCache(CACHE_KEY_BRIEF);
+    if(cached){ briefText=cached; render(); return; }
+  }
+
+  briefLoading=true; render();
+  const open=tasks.filter(t=>!t.done);
+  const overdue=open.filter(t=>isOverdue(t.due));
+  const todayT=open.filter(t=>isToday(t.due));
+  const high=open.filter(t=>t.prio==='high');
+  const taskList=open.slice(0,7).map(t=>`- ${t.name} (${t.project}, due: ${t.due}, prioritas: ${t.prio})`).join('\n');
+  const prompt=`Kamu adalah asisten HC cerdas untuk Araw di Logique. Hari ini ${todayFmt}.\n\nTask belum selesai:\n${taskList}\n\nRingkasan: ${open.length} task terbuka, ${overdue.length} overdue, ${todayT.length} due hari ini, ${high.length} high priority.\n\nTulis daily briefing singkat. Isi:\n1. Sapa Araw dengan hangat\n2. Apa yang urgent (Gunakan **bold** untuk nama task)\n3. Satu rekomendasi spesifik\n4. Semangat penutup\n\nGunakan format Markdown dengan bullet points jika perlu. Maksimal 100 kata.`;
+
+  try{
+    briefText = await callGemini(prompt, false);
+    saveCache(CACHE_KEY_BRIEF, briefText);
+  } catch(e){
+    briefText=`Gagal memuat briefing: ${e.message}`;
+  }
+  briefLoading=false; render();
+}
+
+async function fetchNews(forceRefresh=false){
+  if(newsLoading) return;
+  if(!forceRefresh && newsItems.length>0) return;
+  if(!forceRefresh){
+    const cached = loadCache(CACHE_KEY_NEWS);
+    if(cached){ newsItems=cached; render(); return; }
+  }
+
+  newsLoading=true; render();
+  const prompt=`Buat 8 item berita relevan untuk HC manager di IT Indonesia. Hari ini ${todayFmt}.\nReturn HANYA JSON array valid dengan struktur: [{"title":"...","category":"HC","source":"...","timeAgo":"2 jam lalu","summary":"Satu kalimat max 15 kata."}]`;
+
+  try{
+    let raw = await callGemini(prompt, true);
+    raw = raw.replace(/```json|```/g, '').trim();
+    newsItems = JSON.parse(raw);
+    saveCache(CACHE_KEY_NEWS, newsItems);
+  }catch(e){
+    newsItems=[{title:`Pesan Error: ${e.message}`,category:'System',source:'Log Error',timeAgo:'Sekarang',summary:'Gagal memproses data dari AI. Cek konfigurasi API Key atau kuota Anda.'}];
+  }
+  newsLoading=false; render();
+}
+
+async function filterNews(cat){
+  newsItems=[];newsLoading=true;render();
+  const prompt=`Buat 6 berita relevan kategori "${cat}" untuk HC manager di perusahaan IT Indonesia, ${todayFmt}. Return HANYA JSON array: [{"title":"...","category":"${cat}","source":"...","timeAgo":"...","summary":"max 12 kata"}]`;
+  
+  try{
+    let raw = await callGemini(prompt, true);
+    raw = raw.replace(/```json|```/g,'').trim();
+    newsItems = JSON.parse(raw);
+  }catch(e){
+    newsItems=[{title:`Pesan Error: ${e.message}`,category:'System',source:'Log Error',timeAgo:'Sekarang',summary:'Gagal memfilter kategori.'}];
+  }
+  newsLoading=false;render();
+}
+
+function toggleDark(){dark=!dark;document.getElementById('app').classList.toggle('dark',dark);document.getElementById('theme-btn').textContent=dark?'☀️':'🌙'}
+function nav(v){
+  view=v;
+  document.querySelectorAll('.ni[id^="nav-"]').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
+  document.getElementById('pg-title').textContent={dashboard:'Dashboard',tasks:'My Tasks',kanban:'Kanban Board',projects:'Projects',news:'HC News & Learning'}[v]||v;
+  render();
+  if(v==='news'&&!newsItems.length&&!newsLoading)fetchNews();
+}
+function triggerBriefing(force=false){nav('dashboard');fetchBriefing(force);}
+
+function openProjectModal(identifier = null) {
+  const mTitle = document.getElementById('pm-title');
+  const mId = document.getElementById('pm-id');
+  const mName = document.getElementById('pm-name');
+  const mDue = document.getElementById('pm-due');
+  const mColor = document.getElementById('pm-color');
+
+  if (identifier) {
+    const p = projects.find(x => String(x.id) === String(identifier) || x.name === identifier);
+    if(p) {
+      mTitle.textContent = 'Edit Project';
+      mId.value = p.id || p.name;
+      mName.value = p.name;
+      mDue.value = p.deadline ? String(p.deadline).replace(/T.*/, '') : '';
+      mColor.value = p.color || '#6C63D4';
+    }
+  } else {
+    mTitle.textContent = 'Tambah Project Baru';
+    mId.value = '';
+    mName.value = '';
+    mDue.value = '';
+    mColor.value = '#6C63D4';
+  }
+  document.getElementById('project-modal').style.display = 'flex';
+}
+
+async function saveProject() {
+  const id = document.getElementById('pm-id').value;
+  const name = document.getElementById('pm-name').value.trim();
+  const deadline = document.getElementById('pm-due').value;
+  const color = document.getElementById('pm-color').value;
+
+  if (!name) return;
+
+  let isNew = false;
+  let p = projects.find(x => (x.id && String(x.id) === id) || (x.name === id));
+
+  if (p) {
+    p.name = name;
+    p.deadline = deadline;
+    p.color = color;
+  } else {
+    isNew = true;
+    p = {
+      id: 'proj_' + Date.now(),
+      name: name,
+      deadline: deadline,
+      color: color,
+      tasks: 0, done: 0, totalTasks: 0, doneTasks: 0
+    };
+    projects.push(p);
+  }
+
+  document.getElementById('project-modal').style.display = 'none';
+  updateProjectUI(); 
+  render();
+
+  showDBStatus('Menyimpan project...');
+  if (isNew) {
+    await dbPost({action: 'addProject', project: p});
+  } else {
+    await dbPost({action: 'updateProject', project: p});
+  }
+  hideDBStatus();
+}
+
+function openModal(identifier = null) {
+  const mTitle = document.getElementById('tm-title');
+  const mId = document.getElementById('f-id');
+  const mName = document.getElementById('f-name');
+  const mProj = document.getElementById('f-proj');
+  const mDue = document.getElementById('f-due');
+  const mPrio = document.getElementById('f-prio');
+  const mNotes = document.getElementById('f-notes');
+
+  const detailModal = document.getElementById('task-detail-modal');
+  if(detailModal) detailModal.remove();
+
+  if(identifier) {
+    const t = tasks.find(x => String(x.id) === String(identifier));
+    if(t) {
+      mTitle.textContent = 'Edit Task';
+      mId.value = t.id;
+      mName.value = t.name;
+      mProj.value = t.project || (projects[0]?.name || '');
+      mDue.value = t.due ? String(t.due).replace(/T.*/, '') : '';
+      mPrio.value = t.prio || 'med';
+      mNotes.value = t.notes || '';
+    }
+  } else {
+    mTitle.textContent = 'Tambah Task Baru';
+    mId.value = '';
+    mName.value = '';
+    mProj.value = projects.length > 0 ? projects[0].name : '';
+    mDue.value = todayISO;
+    mPrio.value = 'med';
+    mNotes.value = '';
+  }
+
+  document.getElementById('modal').style.display='flex';
+  setTimeout(()=>mName.focus(),50);
+}
+
+function closeModal(){document.getElementById('modal').style.display='none';}
+function closeModalOutside(e){if(e.target===document.getElementById('modal'))closeModal();}
+
+async function saveTask(){
+  const id = document.getElementById('f-id').value;
+  const name = document.getElementById('f-name').value.trim();
+  if(!name) return;
+
+  let isNew = false;
+  let t = tasks.find(x => String(x.id) === String(id));
+
+  if(t) {
+    t.name = name;
+    t.project = document.getElementById('f-proj').value;
+    t.due = document.getElementById('f-due').value;
+    t.prio = document.getElementById('f-prio').value;
+    t.notes = document.getElementById('f-notes').value.trim();
+  } else {
+    isNew = true;
+    t = {
+      id: 'task_' + Date.now(),
+      name: name,
+      project: document.getElementById('f-proj').value,
+      due: document.getElementById('f-due').value,
+      prio: document.getElementById('f-prio').value,
+      progress: 0,
+      done: false,
+      notes: document.getElementById('f-notes').value.trim()
+    };
+    tasks.unshift(t);
+  }
+
+  closeModal(); updateBadge(); render();
+  
+  showDBStatus('Menyimpan task...');
+  if(isNew) {
+    const res = await dbPost({action:'addTask', task:t});
+    if(res && res.id) t.id = res.id;
+  } else {
+    await dbPost({action:'updateTask', task:t});
+  }
+  hideDBStatus();
+}
+
+async function toggleTask(id){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  t.done=!t.done;if(t.done)t.progress=100;
+  updateBadge();render();
+  await dbPost({action:'updateTask',task:t});
+}
+
+function openProgressModal(id) {
+  const t = tasks.find(x => String(x.id) === String(id));
+  if(!t) return;
+  
+  currentProgTaskId = id;
+  const slider = document.getElementById('prog-slider');
+  const valText = document.getElementById('prog-val');
+  
+  slider.value = t.progress;
+  valText.textContent = t.progress + '%';
+  
+  document.getElementById('progress-modal').style.display = 'flex';
+  
+  const detailModal = document.getElementById('task-detail-modal');
+  if(detailModal) detailModal.remove();
+}
+
+async function saveCustomProgress() {
+  if(!currentProgTaskId) return;
+  
+  const t = tasks.find(x => String(x.id) === String(currentProgTaskId));
+  if(t) {
+    const val = parseInt(document.getElementById('prog-slider').value);
+    t.progress = val;
+    if(val === 100) t.done = true;
+    
+    updateBadge(); render();
+    document.getElementById('progress-modal').style.display = 'none';
+    await dbPost({action:'updateTask', task:t});
+  }
+}
+
+function taskRow(t){
+  const tid = JSON.stringify(t.id);
+  const projStyle = getProjStyle(t.project);
+
+  return`<div class="tr" onclick='openTaskDetail(${tid})' style="cursor:pointer">
+    <div class="chk${t.done?' done':''}" onclick='event.stopPropagation();toggleTask(${tid})'>${t.done?'✓':''}</div>
+    <div class="tname${t.done?' done':''}">${t.name}</div>
+    <span class="ptag" style="${projStyle}; font-weight:600">${t.project}</span>
+    <span class="dtag">${fmtDue(t.due)}</span>
+    <span class="prio ${t.prio==='high'?'ph-prio':t.prio==='med'?'pm-prio':'pl-prio'}">${t.prio==='high'?'High':t.prio==='med'?'Med':'Low'}</span>
+    <div class="pbar" title="Klik untuk update %" style="cursor:pointer" onclick='event.stopPropagation();openProgressModal(${tid})'><div class="pbar-fill" style="width:${t.progress}%"></div></div>
+    <span class="pct" style="cursor:pointer" onclick='event.stopPropagation();openProgressModal(${tid})'>${t.progress}%</span>
+  </div>`;
+}
+
+function render(){
+  const c=document.getElementById('content');
+  const open=tasks.filter(t=>!t.done);
+  const todayT=open.filter(t=>isToday(t.due));
+  const overdue=open.filter(t=>isOverdue(t.due));
+  document.getElementById('pg-sub').textContent=`${open.length} task terbuka · ${todayT.length} due hari ini${overdue.length?` · ${overdue.length} overdue`:''}`;
+
+  if(view==='dashboard'){
+    const done=tasks.filter(t=>t.done).length;
+    const high=open.filter(t=>t.prio==='high').length;
+    
+    // Menerapkan Markdown Parse di Briefing
+    const parsedBrief = briefText ? marked.parse(briefText) : '';
+    const briefSection=briefLoading?`<div class="ai-body loading-pulse">✦ Gemini sedang membuat briefing harian kamu...</div>`:briefText?`<div class="ai-body md-content">${parsedBrief}</div>`:`<div class="ai-body" style="color:var(--tx3)">Klik "Gemini Briefing" di atas untuk AI summary harian.</div>`;
+    
+    const priorityTasks=[...open.filter(t=>isOverdue(t.due)||isToday(t.due)||t.prio==='high')].slice(0,5);
+    c.innerHTML=`
+    <div class="ai-brief">
+      <div class="ai-header"><div class="ai-orb">✦</div><div><div class="ai-title">Daily Briefing by Gemini</div><div class="ai-date">${todayFmt}</div></div></div>
+      ${briefSection}
+      <div class="ai-chips">
+        <span class="chip" onclick="triggerBriefing(true)">↻ Refresh briefing</span>
+        <span class="chip" onclick="nav('news')">📰 Berita HC hari ini</span>
+        <span class="chip" onclick="nav('kanban')">📋 Lihat Kanban</span>
+        <span class="chip" onclick="generateNewsletter()">✉ Generate Newsletter</span>
+        <span class="chip" onclick="clearTodayCache()" style="color:var(--tx3)">↺ Reset cache hari ini</span>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-lbl">Task terbuka</div><div class="stat-val">${open.length}</div><div class="stat-note" style="color:var(--ylw-tx)">${high} high priority</div></div>
+      <div class="stat"><div class="stat-lbl">Due hari ini</div><div class="stat-val" style="color:${todayT.length?'var(--red-tx)':'inherit'}">${todayT.length}</div><div class="stat-note" style="color:var(--red-tx)">${overdue.length} overdue</div></div>
+      <div class="stat"><div class="stat-lbl">Selesai</div><div class="stat-val" style="color:var(--grn)">${done}</div><div class="stat-note" style="color:var(--grn-tx)">sprint ini</div></div>
+      <div class="stat"><div class="stat-lbl">Projects</div><div class="stat-val">${projects.length}</div><div class="stat-note" style="color:var(--blu-tx)">aktif</div></div>
+    </div>
+    <div class="panels">
+      <div><div class="panel">
+        <div class="ph"><span class="ph-title">Task prioritas hari ini</span><button class="btn" onclick="openModal()" style="font-size:11px;padding:4px 9px">+ Tambah</button></div>
+        ${[...priorityTasks,...tasks.filter(t=>t.done).slice(0,1)].map(taskRow).join('')}
+        <div style="padding:8px 14px;font-size:11px;color:var(--tx3);text-align:center;cursor:pointer;border-top:1px solid var(--bd)" onclick="nav('tasks')">Lihat semua ${tasks.length} task →</div>
+      </div></div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="panel">
+          <div class="ph"><span class="ph-title">Projects</span><span class="ph-link" onclick="nav('projects')">Lihat semua</span></div>
+          ${projects.map(p=>{const total=Number(p.totalTasks||p.tasks||0);const doneN=Number(p.doneTasks||p.done||0);const pct=total>0?Math.round(doneN/total*100):0;return`<div class="proj-item"><div class="pdot" style="background:${p.color}"></div><div class="proj-info"><div class="proj-name">${p.name}</div><div class="proj-meta">${doneN}/${total} task · ${fmtDateStr(p.deadline)}</div><div class="proj-bar"><div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div></div></div><div class="proj-pct">${pct}%</div></div>`;}).join('')}
+        </div>
+        <div class="panel">
+          <div class="ph"><span class="ph-title">📰 HC News</span><span class="ph-link" onclick="nav('news')">Semua</span></div>
+          ${newsItems.length?newsItems.slice(0,3).map((n, i)=>`<div class="news-item" onclick="openNewsDetail(${i})"><span class="ncat" style="${catStyle[n.category]||''}">${n.category}</span><div class="ntitle">${n.title}</div><div class="nsumm">${n.summary||''}</div><div class="nmeta">${n.source} · ${n.timeAgo}</div></div>`).join(''):newsLoading?`<div style="padding:14px;text-align:center;font-size:11px;color:var(--tx3)" class="loading-pulse">Memuat berita...</div>`:`<div style="padding:14px;text-align:center;font-size:11px;color:var(--tx3);cursor:pointer" onclick="fetchNews()">Klik untuk muat berita HC →</div>`}
+        </div>
+      </div>
+    </div>`;
+    if(!briefText&&!briefLoading)fetchBriefing();
+    if(!newsItems.length&&!newsLoading)fetchNews();
+
+  } else if(view==='tasks'){
+    const sorted=[...tasks.filter(t=>isOverdue(t.due)&&!t.done),...tasks.filter(t=>isToday(t.due)&&!t.done),...tasks.filter(t=>!isOverdue(t.due)&&!isToday(t.due)&&!t.done),...tasks.filter(t=>t.done)];
+    c.innerHTML=`<div class="panel"><div class="ph"><span class="ph-title">Semua task (${tasks.length})</span><button class="btn primary" onclick="openModal()" style="font-size:11px;padding:4px 12px">+ Tambah task</button></div>${sorted.map(taskRow).join('')}</div>`;
+  } else if(view==='kanban'){
+  document.getElementById('pg-title').textContent='Kanban Board';
+  const colDefs=[
+    {label:'To Do',key:'todo',filter:t=>t.progress===0&&!t.done,prog:0,done:false},
+    {label:'In Progress',key:'prog',filter:t=>t.progress>0&&t.progress<100&&!t.done,prog:50,done:false},
+    {label:'Done',key:'done',filter:t=>t.done,prog:100,done:true}
+  ];
+  c.innerHTML=`
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+    ${colDefs.map(col=>`
+    <div class="panel" style="overflow:visible" id="kancol-${col.key}"
+      ondragover="event.preventDefault();document.getElementById('kancol-${col.key}').style.outline='2px dashed var(--acc)'"
+      ondragleave="document.getElementById('kancol-${col.key}').style.outline=''"
+      ondrop="dropTask(event,'${col.key}');document.getElementById('kancol-${col.key}').style.outline=''">
+      <div class="ph">
+        <span class="ph-title" style="text-transform:uppercase;font-size:10px;letter-spacing:.06em">${col.label}</span>
+        <span class="col-cnt" style="background:var(--bg2);border:1px solid var(--bd);border-radius:7px;padding:1px 7px;font-size:10px;color:var(--tx3)">${tasks.filter(col.filter).length}</span>
+      </div>
+      <div style="padding:8px">
+        ${tasks.filter(col.filter).map(t=>`
+        <div class="kcard" draggable="true"
+          ondragstart='dragTask(event,${JSON.stringify(t.id)})'
+          style="cursor:grab;user-select:none">
+          <div class="kcard-title">${t.name}</div>
+          <div style="margin-bottom:5px">
+            <span class="ptag" style="font-size:10px;${getProjStyle(t.project)}; font-weight:600">${t.project}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span class="prio ${t.prio==='high'?'ph-prio':t.prio==='med'?'pm-prio':'pl-prio'}" style="font-size:9.5px">${t.prio}</span>
+            <span class="kcard-meta">${fmtDue(t.due)}</span>
+          </div>
+          <div style="display:flex;gap:4px">
+            <button onclick='moveTask(${JSON.stringify(t.id)},"prev")' style="flex:1;padding:3px;border-radius:5px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;font-size:10px;color:var(--tx2)" title="Mundur">←</button>
+            <button onclick='moveTask(${JSON.stringify(t.id)},"next")' style="flex:1;padding:3px;border-radius:5px;border:1px solid var(--bd);background:var(--acc);cursor:pointer;font-size:10px;color:#fff" title="Maju">→</button>
+          </div>
+          ${t.progress>0&&!t.done?`<div class="kcard-bar" style="margin-top:6px"><div class="kcard-bar-fill" style="width:${t.progress}%"></div></div>`:''}
+        </div>`).join('')}
+        ${tasks.filter(col.filter).length===0?`<div style="padding:20px;text-align:center;color:var(--tx3);font-size:11px;border:1.5px dashed var(--bd);border-radius:8px">Kosong</div>`:''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+
+  } else if(view==='projects'){
+    c.innerHTML=`<div class="panel">
+      <div class="ph">
+        <span class="ph-title">Projects aktif (${projects.length})</span>
+        <button class="btn primary" onclick="openProjectModal()" style="font-size:11px;padding:4px 12px">+ Project baru</button>
+      </div>
+      ${projects.map(p=>{
+        const total=Number(p.totalTasks||p.tasks||0);
+        const doneN=Number(p.doneTasks||p.done||0);
+        const pct=total>0?Math.round(doneN/total*100):0;
+        const pid=p.id||p.name;
+        return`<div class="proj-item" style="padding:13px 16px; cursor:pointer;" onclick="openProjectModal('${pid}')">
+          <div class="pdot" style="background:${p.color};width:10px;height:10px"></div>
+          <div class="proj-info">
+            <div class="proj-name">${p.name}</div>
+            <div class="proj-meta">${doneN} dari ${total} task selesai · Deadline: ${fmtDateStr(p.deadline)}</div>
+            <div class="proj-bar" style="height:5px;margin-top:7px">
+              <div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div>
+            </div>
+          </div>
+          <div class="proj-pct" style="font-size:14px">${pct}%</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  } else if(view==='news'){
+    c.innerHTML=`
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+      ${['HC','Gen-AI','Learning','Industry'].map(cat=>`<button class="btn" style="font-size:11px;padding:5px 11px" onclick="filterNews('${cat}')">${cat}</button>`).join('')}
+      <button class="btn gem" style="font-size:11px;padding:5px 12px;margin-left:auto" onclick="generateNewsletter()">✦ Generate Newsletter</button>
+    </div>
+    <div style="background:var(--acc-bg);border:1px solid var(--bd);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:500;color:var(--acc-tx);margin-bottom:3px">📧 Daily Newsletter</div>
+      <div style="font-size:11px;color:var(--tx2)">Klik "Generate Newsletter" — Gemini akan buatkan rangkuman dalam format siap kirim.</div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="ph-title">HC Intelligence · ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long'})}</span><span style="font-size:10.5px;color:var(--tx3)">Dikurasi Gemini AI</span></div>
+      ${newsLoading?`<div style="padding:24px;text-align:center;color:var(--tx3);font-size:12px" class="loading-pulse">Gemini sedang mengkurasi berita...</div>`:newsItems.map((n, i)=>`<div class="news-item" onclick="openNewsDetail(${i})"><span class="ncat" style="${catStyle[n.category]||''}">${n.category}</span><div class="ntitle">${n.title}</div><div class="nsumm">${n.summary||''}</div><div class="nmeta">${n.source} · ${n.timeAgo}</div></div>`).join('')}
+    </div>`;
+    if(!newsItems.length&&!newsLoading)fetchNews();
+  }
+}
+
+function openNewsDetail(index) {
+  const news = newsItems[index];
+  if(!news) return;
+  
+  document.getElementById('dm-title').textContent = news.title;
+  
+  if (news.category === 'System') {
+    document.getElementById('dm-meta').innerHTML = `<span class="ncat" style="${catStyle['System']}">${news.category}</span>`;
+    document.getElementById('dm-content').textContent = news.summary + "\n\nPastikan API Key Anda aktif dan memiliki kuota yang cukup.";
+    document.getElementById('dm-action-container').innerHTML = `<button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>`;
+  } else {
+    document.getElementById('dm-meta').innerHTML = `<span class="ncat" style="${catStyle[news.category]||''}">${news.category}</span> · ${news.source} · ${news.timeAgo}`;
+    
+    // Menerapkan Markdown Parse di Detail Berita
+    const rawContent = news.summary + "\n\n✦ Di-generate oleh Gemini. Klik 'Cari Artikel' untuk membaca berita selengkapnya di Google.";
+    document.getElementById('dm-content').innerHTML = `<div class="md-content">${marked.parse(rawContent)}</div>`;
+    
+    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(news.title + ' ' + news.source)}`;
+    document.getElementById('dm-action-container').innerHTML = `
+      <button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>
+      <a href="${searchUrl}" target="_blank" class="btn primary" style="text-decoration:none;">Cari Artikel ↗</a>
+    `;
+  }
+  
+  document.getElementById('detail-modal').style.display = 'flex';
+}
+
+async function generateNewsletter(){
+  const taskList=tasks.filter(t=>!t.done).slice(0,5).map(t=>`- ${t.name}`).join('\n');
+  const prompt=`Buatkan daily HC newsletter dalam Bahasa Indonesia untuk Araw. Hari ini: ${todayFmt}\nTask terbuka: ${tasks.filter(t=>!t.done).length} task:\n${taskList}\n\nFormat:\n📌 Subject line menarik\n\nSalam pembuka personal untuk Araw\n\n3 headline berita HC/AI terkini\n\n💡 Tips HC minggu ini\n\n📚 1 rekomendasi kursus gratis\n\nPenutup motivasi\n\n— HRFlow · Logique\n\nBahasa santai tapi profesional, gunakan format Markdown yang rapi (bold, bullet points). Maksimal 250 kata.`;
+  
+  try {
+    document.getElementById('detail-modal').style.display = 'flex';
+    document.getElementById('dm-title').textContent = "Membuat Newsletter...";
+    document.getElementById('dm-meta').textContent = "Mohon tunggu sebentar, Gemini sedang mengetik ✦";
+    document.getElementById('dm-content').innerHTML = '<div class="loading-pulse">Generating konten...</div>';
+    document.getElementById('dm-action-container').innerHTML = '';
+
+    const result = await callGemini(prompt, false);
+    
+    document.getElementById('dm-title').textContent = "📧 Daily HC Newsletter";
+    document.getElementById('dm-meta').textContent = "Dikurasi khusus untuk Araw oleh Gemini AI";
+    
+    // Menerapkan Markdown Parse di Newsletter
+    document.getElementById('dm-content').innerHTML = `<div class="md-content">${marked.parse(result)}</div>`;
+    
+    document.getElementById('dm-action-container').innerHTML = `
+      <button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>
+      <button class="btn primary" onclick="alert('Fitur kirim ke prawala@logique.co.id akan dikerjakan di tahap integrasi Google Workspace!')">Kirim Email</button>
+    `;
+  } catch(e) {
+    document.getElementById('dm-title').textContent = "Error";
+    document.getElementById('dm-content').textContent = "Gagal memuat: " + e.message;
+    document.getElementById('dm-action-container').innerHTML = `<button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>`;
+  }
+}
+
+let draggedTaskId = null;
+function dragTask(event, id){ draggedTaskId = id; event.dataTransfer.effectAllowed = 'move'; }
+function dropTask(event, colKey){
+  event.preventDefault();
+  if(!draggedTaskId) return;
+  moveTaskToCol(draggedTaskId, colKey);
+  draggedTaskId = null;
+}
+function moveTask(id, direction){
+  const t = tasks.find(x=>String(x.id)===String(id));
+  if(!t) return;
+  const cols = ['todo','prog','done'];
+  const cur = t.done ? 'done' : t.progress===0 ? 'todo' : 'prog';
+  const idx = cols.indexOf(cur);
+  if(direction==='next' && idx<2) moveTaskToCol(id, cols[idx+1]);
+  if(direction==='prev' && idx>0) moveTaskToCol(id, cols[idx-1]);
+}
+async function moveTaskToCol(id, colKey){
+  const t = tasks.find(x=>String(x.id)===String(id));
+  if(!t) return;
+  if(colKey==='todo')  { t.progress=0;  t.done=false; }
+  if(colKey==='prog')  { t.progress=t.progress>0&&t.progress<100?t.progress:50; t.done=false; }
+  if(colKey==='done')  { t.progress=100; t.done=true; }
+  updateBadge(); render();
+  await dbPost({action:'updateTask', task:t});
+}
+
+function openTaskDetail(id){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  const tid=JSON.stringify(id);
+  const projStyle = getProjStyle(t.project);
+  
+  let el=document.getElementById('task-detail-modal');
+  if(el)el.remove();
+  el=document.createElement('div');
+  el.id='task-detail-modal';
+  el.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px';
+  el.onclick=function(e){if(e.target===el)el.remove();};
+  const prioLabel=t.prio==='high'?'High':t.prio==='med'?'Medium':'Low';
+  const prioStyle=t.prio==='high'?'background:var(--red-bg);color:var(--red-tx)':t.prio==='med'?'background:var(--ylw-bg);color:var(--ylw-tx)':'background:var(--grn-bg);color:var(--grn-tx)';
+  
+  el.innerHTML=`<div style="background:var(--bg1);border:1px solid var(--bd);border-radius:16px;padding:0;width:100%;max-width:480px;overflow:hidden">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <div>
+        <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;${projStyle}">${t.project}</span>
+          <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;${prioStyle}">${prioLabel}</span>
+          ${t.done?'<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--grn-bg);color:var(--grn-tx)">✓ Done</span>':''}
+        </div>
+        <div style="font-size:16px;font-weight:600;color:var(--tx1);line-height:1.35">${t.name}</div>
+      </div>
+      <button onclick="document.getElementById('task-detail-modal').remove()" style="background:none;border:none;cursor:pointer;font-size:22px;color:var(--tx3);flex-shrink:0;line-height:1">×</button>
+    </div>
+    <div style="padding:16px 20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:var(--tx3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em">Due Date</div>
+          <div style="font-size:13px;font-weight:500;color:var(--tx1)">${fmtDue(t.due)||'—'}</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div style="font-size:10px;color:var(--tx3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em">Progress</div>
+          <div style="font-size:13px;font-weight:500;color:var(--tx1)">${t.progress}%</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:14px">
+        <div style="height:6px;background:var(--bg3);border-radius:4px;overflow:hidden">
+          <div style="height:100%;background:var(--grn);width:${t.progress}%;border-radius:4px;transition:width .3s"></div>
+        </div>
+      </div>
+      ${t.notes?`<div style="background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:12.5px;color:var(--tx2);line-height:1.6">${t.notes}</div>`:''}
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick='event.stopPropagation();openModal(${tid})' 
+        class="btn" style="font-size:11px; flex:1">
+        ✏️ Edit Task
+      </button>
+      <button onclick='event.stopPropagation();toggleTask(${tid});document.getElementById("task-detail-modal").remove()' 
+        class="btn ${t.done?'':'primary'}" style="font-size:11px;flex:1">
+        ${t.done?'↩ Tandai belum selesai':'✓ Tandai selesai'}
+      </button>
+      <button onclick='event.stopPropagation();openProgressModal(${tid})' 
+        class="btn" style="font-size:11px">
+        📊 Update %
+      </button>
+      <button onclick='event.stopPropagation();deleteTaskConfirm(${tid})' 
+        class="btn" style="font-size:11px;color:var(--red-tx);border-color:var(--red-bg)">
+        🗑 Hapus
+      </button>
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+
+async function deleteTaskConfirm(id){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  if(!confirm('Hapus task "'+t.name+'"?'))return;
+  tasks=tasks.filter(x=>String(x.id)!==String(id));
+  document.getElementById('task-detail-modal')?.remove();
+  updateBadge();render();
+  await dbPost({action:'deleteTask',id});
+}
+
+loadFromDB();
+</script>
+</body>
 </html>
