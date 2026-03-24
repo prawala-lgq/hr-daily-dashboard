@@ -349,7 +349,7 @@ async function callGemini(prompt, requireJson = false){
   const payload = { contents: [{ parts: [{ text: prompt }] }] };
   if(requireJson) payload.generationConfig = { responseMimeType: 'application/json' };
 
-  const res = await fetch('/.netlify/functions/gemini', {
+  const res = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
