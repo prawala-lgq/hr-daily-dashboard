@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>HRFlow — Araw | Logique</title>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -145,25 +144,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg0);color:var(--tx1);fon
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
-
-/* Slider Custom */
-input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--acc); cursor: pointer; margin-top: -6px; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
-input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: var(--bd2); border-radius: 2px; }
-input[type=range]:focus { outline: none; }
-
-/* STYLING UNTUK MARKDOWN (RICH TEXT) */
-.md-content { font-size: 12.5px; color: var(--tx2); line-height: 1.6; }
-.md-content p { margin-bottom: 12px; }
-.md-content p:last-child { margin-bottom: 0; }
-.md-content strong { color: var(--tx1); font-weight: 600; }
-.md-content ul, .md-content ol { margin-bottom: 12px; padding-left: 20px; }
-.md-content li { margin-bottom: 6px; }
-.md-content h1, .md-content h2, .md-content h3 { color: var(--tx1); margin-top: 18px; margin-bottom: 8px; font-weight: 600; line-height: 1.3; }
-.md-content h3 { font-size: 14px; }
-.md-content a { color: var(--blu); text-decoration: none; }
-.md-content a:hover { text-decoration: underline; }
-.md-content code { background: var(--bg2); padding: 2px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; font-size: 11.5px; border: 1px solid var(--bd); }
 </style>
 </head>
 <body>
@@ -198,10 +178,12 @@ input[type=range]:focus { outline: none; }
         <svg class="ni-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v10a1 1 0 01-1 1H2a1 1 0 01-1-1V3a1 1 0 011-1zm1 2v2h10V4H3zm0 4v1.5h10V8H3zm0 3v1.5h6V11H3z"/></svg>
         HC News & Learn
       </div>
-      
       <div class="nl">Projects</div>
-      <div id="sidebar-projects-container"></div>
-      
+      <div id="sidebar-projects"><div class="ni"><div class="pdot" style="background:#6C63D4"></div>Recruitment 2024</div>
+      <div class="ni"><div class="pdot" style="background:#1a9e72"></div>Onboarding Flow</div>
+      <div class="ni"><div class="pdot" style="background:#c85428"></div>Policy Review</div>
+      <div class="ni"><div class="pdot" style="background:#2e7dd6"></div>Payroll Audit</div>
+      <div class="ni"><div class="pdot" style="background:#b07010"></div>Training Program</div></div>
     </div>
     <div class="integ-section">
       <div class="integ-title">Integrations</div>
@@ -225,7 +207,8 @@ input[type=range]:focus { outline: none; }
       </div>
       <div class="tb-right">
         <button class="btn" onclick="nav('news')">📰 HC News</button>
-        <button class="btn gem" onclick="triggerBriefing(true)">✦ Gemini Briefing</button>
+        <button class="btn" onclick="loadFromDB()" title="Sync data dari Google Sheets" style="font-size:11px">↻ Sync</button>
+        <button class="btn gem" onclick="triggerBriefing()">✦ Gemini Briefing</button>
         <button class="btn primary" onclick="openModal()">+ Add Task</button>
       </div>
     </div>
@@ -235,11 +218,12 @@ input[type=range]:focus { outline: none; }
 
 <div class="modal-overlay" id="modal" style="display:none" onclick="closeModalOutside(event)">
   <div class="modal">
-    <h3 id="tm-title">Tambah Task Baru</h3>
-    <input type="hidden" id="f-id">
+    <h3>Tambah Task Baru</h3>
     <div class="field"><label>Nama task *</label><input id="f-name" placeholder="e.g. Review CV kandidat Frontend"></div>
     <div class="field"><label>Project</label>
-      <select id="f-proj"></select>
+      <select id="f-proj">
+        <option>Loading...</option>
+      </select>
     </div>
     <div class="grid2">
       <div class="field"><label>Due date</label><input type="date" id="f-due"></div>
@@ -255,20 +239,6 @@ input[type=range]:focus { outline: none; }
   </div>
 </div>
 
-<div class="modal-overlay" id="progress-modal" style="display:none; z-index:400" onclick="if(event.target===this)this.style.display='none'">
-  <div class="modal" style="width:280px">
-    <h3 style="font-size:14px; margin-bottom:12px; color:var(--tx1)">Update Progress</h3>
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px">
-      <input type="range" id="prog-slider" min="0" max="100" style="flex:1" oninput="document.getElementById('prog-val').textContent=this.value+'%'">
-      <span id="prog-val" style="font-size:14px; font-weight:600; width:45px; text-align:right; color:var(--acc)">0%</span>
-    </div>
-    <div class="modal-btns">
-      <button class="btn" onclick="document.getElementById('progress-modal').style.display='none'">Batal</button>
-      <button class="btn primary" onclick="saveCustomProgress()">Simpan</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay" id="detail-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
   <div class="modal" style="width: 480px; max-width: 90vw;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
@@ -276,24 +246,8 @@ input[type=range]:focus { outline: none; }
       <button class="btn" onclick="document.getElementById('detail-modal').style.display='none'" style="padding:2px 8px; font-size: 10px;">✕</button>
     </div>
     <div id="dm-meta" style="font-size:11px; color:var(--tx3); margin-bottom:12px;"></div>
-    <div id="dm-content" style="max-height:60vh; overflow-y:auto; margin-bottom:16px;"></div>
+    <div id="dm-content" style="font-size:12.5px; color:var(--tx2); line-height:1.6; white-space:pre-wrap; max-height:60vh; overflow-y:auto; margin-bottom:16px;"></div>
     <div class="modal-btns" id="dm-action-container" style="justify-content:flex-end;">
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="project-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
-  <div class="modal">
-    <h3 id="pm-title">Tambah Project Baru</h3>
-    <input type="hidden" id="pm-id">
-    <div class="field"><label>Nama Project *</label><input id="pm-name" placeholder="e.g. Recruitment 2024"></div>
-    <div class="grid2">
-      <div class="field"><label>Deadline</label><input type="date" id="pm-due"></div>
-      <div class="field"><label>Warna Tema</label><input type="color" id="pm-color" value="#6C63D4" style="height:34px;padding:2px;width:100%"></div>
-    </div>
-    <div class="modal-btns">
-      <button class="btn" onclick="document.getElementById('project-modal').style.display='none'">Batal</button>
-      <button class="btn primary" onclick="saveProject()">Simpan Project</button>
     </div>
   </div>
 </div>
@@ -301,40 +255,44 @@ input[type=range]:focus { outline: none; }
 <script>
 // STATE
 let dark=false,view='dashboard',briefText='',briefLoading=false,newsItems=[],newsLoading=false;
-let currentProgTaskId = null; 
-
 const today=new Date();
 const todayISO=today.toISOString().split('T')[0];
 const todayFmt=today.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const FIXED_pBg={'Recruitment 2024':'var(--acc-bg)','Onboarding Flow':'var(--grn-bg)','Policy Review':'var(--red-bg)','Payroll Audit':'var(--blu-bg)','Training Program':'var(--ylw-bg)'};
+const FIXED_pTx={'Recruitment 2024':'var(--acc-tx)','Onboarding Flow':'var(--grn-tx)','Policy Review':'var(--red-tx)','Payroll Audit':'var(--blu-tx)','Training Program':'var(--ylw-tx)'};
+const BG_VARS=['var(--acc-bg)','var(--grn-bg)','var(--red-bg)','var(--blu-bg)','var(--ylw-bg)','var(--acc-bg)','var(--grn-bg)','var(--blu-bg)'];
+const TX_VARS=['var(--acc-tx)','var(--grn-tx)','var(--red-tx)','var(--blu-tx)','var(--ylw-tx)','var(--acc-tx)','var(--grn-tx)','var(--blu-tx)'];
+let pBg={...FIXED_pBg};
+let pTx={...FIXED_pTx};
 
+function rebuildProjectMaps(){
+  projects.forEach((p,i)=>{
+    if(!pBg[p.name]) pBg[p.name]=BG_VARS[i%BG_VARS.length];
+    if(!pTx[p.name]) pTx[p.name]=TX_VARS[i%TX_VARS.length];
+  });
+}
 const catStyle={'HC':'background:var(--acc-bg);color:var(--acc-tx)','Gen-AI':'background:var(--grn-bg);color:var(--grn-tx)','Learning':'background:var(--ylw-bg);color:var(--ylw-tx)','Industry':'background:var(--blu-bg);color:var(--blu-tx)','System':'background:var(--red-bg);color:var(--red-tx)'};
 
-// ── URL Google Apps Script ──
+// ── GANTI dengan URL Google Apps Script kamu setelah deploy ──
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwFrlKUVAPQfXCqdrA0RAr6IImrQzKhUBzJQ3TIRjXScLK6_lvRZxVa6xH6owf_i8mKcw/exec';
 const HAS_DB  = GAS_URL !== 'MASUKKAN_APPS_SCRIPT_URL_DISINI';
 
 let tasks=[];
-let projects=[];
-
-function updateProjectUI() {
-  const select = document.getElementById('f-proj');
-  if(select) {
-    select.innerHTML = projects.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-  }
-  const sidebarContainer = document.getElementById('sidebar-projects-container');
-  if(sidebarContainer) {
-    sidebarContainer.innerHTML = projects.map(p => `
-      <div class="ni"><div class="pdot" style="background:${p.color}"></div>${p.name}</div>
-    `).join('');
-  }
-}
-
-function getProjStyle(projName) {
-  const p = projects.find(x => x.name === projName);
-  if(!p) return 'background:var(--bg2);color:var(--tx2)';
-  return `background:${p.color}26; color:${p.color}; border: 1px solid ${p.color}4D;`;
-}
-
+let projects=[
+  {name:'Recruitment 2024',color:'#6C63D4',tasks:12,done:7,deadline:'Apr 2026'},
+  {name:'Onboarding Flow',color:'#1a9e72',tasks:8,done:5,deadline:'Mar 2026'},
+  {name:'Policy Review',color:'#c85428',tasks:15,done:4,deadline:'May 2026'},
+  {name:'Payroll Audit',color:'#2e7dd6',tasks:6,done:1,deadline:'Mar 2026'},
+  {name:'Training Program',color:'#b07010',tasks:10,done:3,deadline:'Jun 2026'},
+];
+const DEFAULT_TASKS=[
+  {id:'t1',name:'Review 5 kandidat CV Frontend Dev',project:'Recruitment 2024',due:'2026-03-13',prio:'high',progress:40,done:false,notes:''},
+  {id:'t2',name:'Finalisasi onboarding checklist Q1',project:'Onboarding Flow',due:'2026-03-13',prio:'high',progress:75,done:false,notes:''},
+  {id:'t3',name:'Update employee handbook v2',project:'Policy Review',due:'2026-03-15',prio:'med',progress:30,done:false,notes:''},
+  {id:'t4',name:'Prepare Q1 payroll report',project:'Payroll Audit',due:'2026-03-17',prio:'med',progress:20,done:false,notes:''},
+  {id:'t5',name:'Kirim offer letter — Anisa S.',project:'Recruitment 2024',due:'2026-03-15',prio:'med',progress:90,done:false,notes:''},
+  {id:'t6',name:'Setup Google Meet orientasi karyawan baru',project:'Onboarding Flow',due:'2026-03-18',prio:'low',progress:10,done:false,notes:''},
+];
 async function dbGet(action){
   if(!HAS_DB)return null;
   try{const r=await fetch(GAS_URL+'?action='+action);return await r.json();}catch(e){return null;}
@@ -344,18 +302,28 @@ async function dbPost(body){
   try{const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(body)});return await r.json();}catch(e){return null;}
 }
 async function loadFromDB(){
-  if(!HAS_DB)return;
+  if(!HAS_DB){tasks=[...DEFAULT_TASKS];updateBadge();render();return;}
   showDBStatus('Memuat data...');
-  const pres=await dbGet('getProjects');
-  if(pres&&pres.projects&&pres.projects.length>0) projects=pres.projects;
-  const res=await dbGet('getTasks');
-  if(res&&res.tasks&&res.tasks.length>0) tasks=res.tasks;
-  updateProjectUI(); 
-  hideDBStatus();
-  updateBadge();
-  render();
+  // Load tasks dan projects selalu fresh dari Sheets
+  const [res, pres] = await Promise.all([dbGet('getTasks'), dbGet('getProjects')]);
+  if(res&&res.tasks&&res.tasks.length>0){tasks=res.tasks;}else{tasks=[...DEFAULT_TASKS];}
+  if(pres&&pres.projects&&pres.projects.length>0){
+    projects=pres.projects;
+    rebuildProjectMaps();
+    renderSidebarProjects();
+  }
+  hideDBStatus();updateBadge();render();
 }
 
+function renderSidebarProjects(){
+  const container=document.getElementById('sidebar-projects');
+  if(!container)return;
+  const pColors2=['#6C63D4','#1a9e72','#c85428','#2e7dd6','#b07010','#7F77DD','#D4547A','#0F9D9D'];
+  container.innerHTML=projects.map((p,i)=>{
+    const color=p.color||pColors2[i%pColors2.length];
+    return`<div class="ni" onclick="nav('projects')"><div class="pdot" style="background:${color}"></div>${p.name}</div>`;
+  }).join('');
+}
 function showDBStatus(msg){
   let el=document.getElementById('db-status');
   if(!el){el=document.createElement('div');el.id='db-status';el.style.cssText='position:fixed;bottom:16px;right:16px;background:var(--tx1);color:var(--bg1);padding:8px 14px;border-radius:8px;font-size:12px;z-index:999';document.body.appendChild(el);}
@@ -365,7 +333,6 @@ function hideDBStatus(){const el=document.getElementById('db-status');if(el)el.s
 
 function isToday(d){if(!d)return false;const a=new Date(d),b=new Date();a.setHours(0,0,0,0);b.setHours(0,0,0,0);return a.getTime()===b.getTime()}
 function isOverdue(d){if(!d)return false;const a=new Date(d),b=new Date();a.setHours(0,0,0,0);b.setHours(0,0,0,0);return a<b}
-
 function fmtDue(d){
   if(!d)return'—';const dt=new Date(d),t=new Date();dt.setHours(0,0,0,0);t.setHours(0,0,0,0);
   const diff=Math.round((dt-t)/86400000);
@@ -374,22 +341,15 @@ function fmtDue(d){
   if(diff===1)return'<span style="color:var(--ylw-tx)">Besok</span>';
   return dt.toLocaleDateString('id-ID',{day:'numeric',month:'short'});
 }
-
-function fmtDateStr(dString) {
-  if(!dString) return '—';
-  const clean = dString.replace(/T.*/, ''); 
-  const d = new Date(clean);
-  if(isNaN(d.getTime())) return clean;
-  return d.toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
-}
-
 function updateBadge(){document.getElementById('open-cnt').textContent=tasks.filter(t=>!t.done).length}
 
+// 1. UPDATE: Panggil API Netlify dengan penanganan Error yang lebih baik
 async function callGemini(prompt, requireJson = false){
+  // API key aman — dipanggil via Netlify Function, tidak terekspos di browser
   const payload = { contents: [{ parts: [{ text: prompt }] }] };
   if(requireJson) payload.generationConfig = { responseMimeType: 'application/json' };
 
-  const res = await fetch('/api/gemini', {
+  const res = await fetch('/.netlify/functions/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -400,19 +360,29 @@ async function callGemini(prompt, requireJson = false){
   return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
+// ── DAILY CACHE (localStorage) ────────────────────────────────
+// Semua AI content di-cache per hari → hemat token, tidak generate ulang saat refresh
 const CACHE_KEY_BRIEF = 'hrflow_brief';
 const CACHE_KEY_NEWS  = 'hrflow_news';
+
 function getCacheDate(){ return new Date().toISOString().split('T')[0]; }
-function saveCache(key, data){ try{ localStorage.setItem(key, JSON.stringify({ date: getCacheDate(), data })); }catch(e){} }
+
+function saveCache(key, data){
+  try{
+    localStorage.setItem(key, JSON.stringify({ date: getCacheDate(), data }));
+  }catch(e){}
+}
+
 function loadCache(key){
   try{
     const raw = localStorage.getItem(key);
     if(!raw) return null;
     const parsed = JSON.parse(raw);
-    if(parsed.date !== getCacheDate()) return null;
+    if(parsed.date !== getCacheDate()) return null; // expired (hari berbeda)
     return parsed.data;
   }catch(e){ return null; }
 }
+
 function clearTodayCache(){
   localStorage.removeItem(CACHE_KEY_BRIEF);
   localStorage.removeItem(CACHE_KEY_NEWS);
@@ -424,6 +394,8 @@ function clearTodayCache(){
 
 async function fetchBriefing(forceRefresh=false){
   if(briefLoading) return;
+
+  // Cek cache dulu — kalau ada dan masih hari ini, langsung pakai
   if(!forceRefresh){
     const cached = loadCache(CACHE_KEY_BRIEF);
     if(cached){ briefText=cached; render(); return; }
@@ -435,20 +407,23 @@ async function fetchBriefing(forceRefresh=false){
   const todayT=open.filter(t=>isToday(t.due));
   const high=open.filter(t=>t.prio==='high');
   const taskList=open.slice(0,7).map(t=>`- ${t.name} (${t.project}, due: ${t.due}, prioritas: ${t.prio})`).join('\n');
-  const prompt=`Kamu adalah asisten HC cerdas untuk Araw di Logique. Hari ini ${todayFmt}.\n\nTask belum selesai:\n${taskList}\n\nRingkasan: ${open.length} task terbuka, ${overdue.length} overdue, ${todayT.length} due hari ini, ${high.length} high priority.\n\nTulis daily briefing singkat. Isi:\n1. Sapa Araw dengan hangat\n2. Apa yang urgent (Gunakan **bold** untuk nama task)\n3. Satu rekomendasi spesifik\n4. Semangat penutup\n\nGunakan format Markdown dengan bullet points jika perlu. Maksimal 100 kata.`;
+  const prompt=`Kamu adalah asisten HC cerdas untuk Araw di Logique. Hari ini ${todayFmt}.\n\nTask belum selesai:\n${taskList}\n\nRingkasan: ${open.length} task terbuka, ${overdue.length} overdue, ${todayT.length} due hari ini, ${high.length} high priority.\n\nTulis daily briefing singkat (3-4 kalimat). Isi:\n1. Sapa Araw\n2. Apa yang urgent\n3. Satu rekomendasi\n4. Semangat penutup\n\nMaksimal 75 kata. Langsung ke poin.`;
 
   try{
     briefText = await callGemini(prompt, false);
-    saveCache(CACHE_KEY_BRIEF, briefText);
+    saveCache(CACHE_KEY_BRIEF, briefText); // simpan ke cache
   } catch(e){
     briefText=`Gagal memuat briefing: ${e.message}`;
   }
   briefLoading=false; render();
 }
 
+// 2. UPDATE: Paksa JSON format saat menarik berita
 async function fetchNews(forceRefresh=false){
   if(newsLoading) return;
   if(!forceRefresh && newsItems.length>0) return;
+
+  // Cek cache — kalau ada dan masih hari ini, langsung pakai
   if(!forceRefresh){
     const cached = loadCache(CACHE_KEY_NEWS);
     if(cached){ newsItems=cached; render(); return; }
@@ -461,13 +436,14 @@ async function fetchNews(forceRefresh=false){
     let raw = await callGemini(prompt, true);
     raw = raw.replace(/```json|```/g, '').trim();
     newsItems = JSON.parse(raw);
-    saveCache(CACHE_KEY_NEWS, newsItems);
+    saveCache(CACHE_KEY_NEWS, newsItems); // simpan ke cache
   }catch(e){
     newsItems=[{title:`Pesan Error: ${e.message}`,category:'System',source:'Log Error',timeAgo:'Sekarang',summary:'Gagal memproses data dari AI. Cek konfigurasi API Key atau kuota Anda.'}];
   }
   newsLoading=false; render();
 }
 
+// 3. UPDATE: Paksa JSON format saat memfilter berita
 async function filterNews(cat){
   newsItems=[];newsLoading=true;render();
   const prompt=`Buat 6 berita relevan kategori "${cat}" untuk HC manager di perusahaan IT Indonesia, ${todayFmt}. Return HANYA JSON array: [{"title":"...","category":"${cat}","source":"...","timeAgo":"...","summary":"max 12 kata"}]`;
@@ -492,154 +468,29 @@ function nav(v){
   if(v==='news'&&!newsItems.length&&!newsLoading)fetchNews();
 }
 function triggerBriefing(force=false){nav('dashboard');fetchBriefing(force);}
-
-function openProjectModal(identifier = null) {
-  const mTitle = document.getElementById('pm-title');
-  const mId = document.getElementById('pm-id');
-  const mName = document.getElementById('pm-name');
-  const mDue = document.getElementById('pm-due');
-  const mColor = document.getElementById('pm-color');
-
-  if (identifier) {
-    const p = projects.find(x => String(x.id) === String(identifier) || x.name === identifier);
-    if(p) {
-      mTitle.textContent = 'Edit Project';
-      mId.value = p.id || p.name;
-      mName.value = p.name;
-      mDue.value = p.deadline ? String(p.deadline).replace(/T.*/, '') : '';
-      mColor.value = p.color || '#6C63D4';
-    }
-  } else {
-    mTitle.textContent = 'Tambah Project Baru';
-    mId.value = '';
-    mName.value = '';
-    mDue.value = '';
-    mColor.value = '#6C63D4';
-  }
-  document.getElementById('project-modal').style.display = 'flex';
-}
-
-async function saveProject() {
-  const id = document.getElementById('pm-id').value;
-  const name = document.getElementById('pm-name').value.trim();
-  const deadline = document.getElementById('pm-due').value;
-  const color = document.getElementById('pm-color').value;
-
-  if (!name) return;
-
-  let isNew = false;
-  let p = projects.find(x => (x.id && String(x.id) === id) || (x.name === id));
-
-  if (p) {
-    p.name = name;
-    p.deadline = deadline;
-    p.color = color;
-  } else {
-    isNew = true;
-    p = {
-      id: 'proj_' + Date.now(),
-      name: name,
-      deadline: deadline,
-      color: color,
-      tasks: 0, done: 0, totalTasks: 0, doneTasks: 0
-    };
-    projects.push(p);
-  }
-
-  document.getElementById('project-modal').style.display = 'none';
-  updateProjectUI(); 
-  render();
-
-  showDBStatus('Menyimpan project...');
-  if (isNew) {
-    await dbPost({action: 'addProject', project: p});
-  } else {
-    await dbPost({action: 'updateProject', project: p});
-  }
-  hideDBStatus();
-}
-
-function openModal(identifier = null) {
-  const mTitle = document.getElementById('tm-title');
-  const mId = document.getElementById('f-id');
-  const mName = document.getElementById('f-name');
-  const mProj = document.getElementById('f-proj');
-  const mDue = document.getElementById('f-due');
-  const mPrio = document.getElementById('f-prio');
-  const mNotes = document.getElementById('f-notes');
-
-  const detailModal = document.getElementById('task-detail-modal');
-  if(detailModal) detailModal.remove();
-
-  if(identifier) {
-    const t = tasks.find(x => String(x.id) === String(identifier));
-    if(t) {
-      mTitle.textContent = 'Edit Task';
-      mId.value = t.id;
-      mName.value = t.name;
-      mProj.value = t.project || (projects[0]?.name || '');
-      mDue.value = t.due ? String(t.due).replace(/T.*/, '') : '';
-      mPrio.value = t.prio || 'med';
-      mNotes.value = t.notes || '';
-    }
-  } else {
-    mTitle.textContent = 'Tambah Task Baru';
-    mId.value = '';
-    mName.value = '';
-    mProj.value = projects.length > 0 ? projects[0].name : '';
-    mDue.value = todayISO;
-    mPrio.value = 'med';
-    mNotes.value = '';
-  }
-
+function openModal(){
+  document.getElementById('f-name').value='';
+  document.getElementById('f-due').value=todayISO;
+  document.getElementById('f-notes').value='';
+  document.getElementById('f-prio').value='med';
+  // Populate project dropdown dari data terkini
+  const sel=document.getElementById('f-proj');
+  sel.innerHTML=projects.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
   document.getElementById('modal').style.display='flex';
-  setTimeout(()=>mName.focus(),50);
+  setTimeout(()=>document.getElementById('f-name').focus(),50);
 }
-
 function closeModal(){document.getElementById('modal').style.display='none';}
 function closeModalOutside(e){if(e.target===document.getElementById('modal'))closeModal();}
-
 async function saveTask(){
-  const id = document.getElementById('f-id').value;
-  const name = document.getElementById('f-name').value.trim();
-  if(!name) return;
-
-  let isNew = false;
-  let t = tasks.find(x => String(x.id) === String(id));
-
-  if(t) {
-    t.name = name;
-    t.project = document.getElementById('f-proj').value;
-    t.due = document.getElementById('f-due').value;
-    t.prio = document.getElementById('f-prio').value;
-    t.notes = document.getElementById('f-notes').value.trim();
-  } else {
-    isNew = true;
-    t = {
-      id: 'task_' + Date.now(),
-      name: name,
-      project: document.getElementById('f-proj').value,
-      due: document.getElementById('f-due').value,
-      prio: document.getElementById('f-prio').value,
-      progress: 0,
-      done: false,
-      notes: document.getElementById('f-notes').value.trim()
-    };
-    tasks.unshift(t);
-  }
-
-  closeModal(); updateBadge(); render();
-  
+  const name=document.getElementById('f-name').value.trim();if(!name)return;
+  const task={id:'task_'+Date.now(),name,project:document.getElementById('f-proj').value,due:document.getElementById('f-due').value,prio:document.getElementById('f-prio').value,progress:0,done:false,notes:document.getElementById('f-notes').value.trim()};
+  tasks.unshift(task);
+  closeModal();updateBadge();render();
   showDBStatus('Menyimpan task...');
-  if(isNew) {
-    const res = await dbPost({action:'addTask', task:t});
-    if(res && res.id) t.id = res.id;
-  } else {
-    await dbPost({action:'updateTask', task:t});
-  }
+  const res=await dbPost({action:'addTask',task});
+  if(res&&res.id){task.id=res.id;}
   hideDBStatus();
 }
-
 async function toggleTask(id){
   const t=tasks.find(x=>String(x.id)===String(id));
   if(!t)return;
@@ -648,50 +499,16 @@ async function toggleTask(id){
   await dbPost({action:'updateTask',task:t});
 }
 
-function openProgressModal(id) {
-  const t = tasks.find(x => String(x.id) === String(id));
-  if(!t) return;
-  
-  currentProgTaskId = id;
-  const slider = document.getElementById('prog-slider');
-  const valText = document.getElementById('prog-val');
-  
-  slider.value = t.progress;
-  valText.textContent = t.progress + '%';
-  
-  document.getElementById('progress-modal').style.display = 'flex';
-  
-  const detailModal = document.getElementById('task-detail-modal');
-  if(detailModal) detailModal.remove();
-}
-
-async function saveCustomProgress() {
-  if(!currentProgTaskId) return;
-  
-  const t = tasks.find(x => String(x.id) === String(currentProgTaskId));
-  if(t) {
-    const val = parseInt(document.getElementById('prog-slider').value);
-    t.progress = val;
-    if(val === 100) t.done = true;
-    
-    updateBadge(); render();
-    document.getElementById('progress-modal').style.display = 'none';
-    await dbPost({action:'updateTask', task:t});
-  }
-}
-
 function taskRow(t){
   const tid = JSON.stringify(t.id);
-  const projStyle = getProjStyle(t.project);
-
-  return`<div class="tr" onclick='openTaskDetail(${tid})' style="cursor:pointer">
-    <div class="chk${t.done?' done':''}" onclick='event.stopPropagation();toggleTask(${tid})'>${t.done?'✓':''}</div>
+  return`<div class="tr" onclick="openTaskDetail(${tid})" style="cursor:pointer">
+    <div class="chk${t.done?' done':''}" onclick="event.stopPropagation();toggleTask(${tid})">${t.done?'✓':''}</div>
     <div class="tname${t.done?' done':''}">${t.name}</div>
-    <span class="ptag" style="${projStyle}; font-weight:600">${t.project}</span>
+    <span class="ptag" style="background:${pBg[t.project]||'var(--bg2)'};color:${pTx[t.project]||'var(--tx2)'}">${t.project}</span>
     <span class="dtag">${fmtDue(t.due)}</span>
     <span class="prio ${t.prio==='high'?'ph-prio':t.prio==='med'?'pm-prio':'pl-prio'}">${t.prio==='high'?'High':t.prio==='med'?'Med':'Low'}</span>
-    <div class="pbar" title="Klik untuk update %" style="cursor:pointer" onclick='event.stopPropagation();openProgressModal(${tid})'><div class="pbar-fill" style="width:${t.progress}%"></div></div>
-    <span class="pct" style="cursor:pointer" onclick='event.stopPropagation();openProgressModal(${tid})'>${t.progress}%</span>
+    <div class="pbar" title="Klik % untuk update" style="cursor:pointer" onclick="event.stopPropagation();updateProgress(${tid})"><div class="pbar-fill" style="width:${t.progress}%"></div></div>
+    <span class="pct" style="cursor:pointer" onclick="event.stopPropagation();updateProgress(${tid})">${t.progress}%</span>
   </div>`;
 }
 
@@ -705,11 +522,7 @@ function render(){
   if(view==='dashboard'){
     const done=tasks.filter(t=>t.done).length;
     const high=open.filter(t=>t.prio==='high').length;
-    
-    // Menerapkan Markdown Parse di Briefing
-    const parsedBrief = briefText ? marked.parse(briefText) : '';
-    const briefSection=briefLoading?`<div class="ai-body loading-pulse">✦ Gemini sedang membuat briefing harian kamu...</div>`:briefText?`<div class="ai-body md-content">${parsedBrief}</div>`:`<div class="ai-body" style="color:var(--tx3)">Klik "Gemini Briefing" di atas untuk AI summary harian.</div>`;
-    
+    const briefSection=briefLoading?`<div class="ai-body loading-pulse">✦ Gemini sedang membuat briefing harian kamu...</div>`:briefText?`<div class="ai-body">${briefText}</div>`:`<div class="ai-body" style="color:var(--tx3)">Klik "Gemini Briefing" di atas untuk AI summary harian.</div>`;
     const priorityTasks=[...open.filter(t=>isOverdue(t.due)||isToday(t.due)||t.prio==='high')].slice(0,5);
     c.innerHTML=`
     <div class="ai-brief">
@@ -738,11 +551,11 @@ function render(){
       <div style="display:flex;flex-direction:column;gap:12px">
         <div class="panel">
           <div class="ph"><span class="ph-title">Projects</span><span class="ph-link" onclick="nav('projects')">Lihat semua</span></div>
-          ${projects.map(p=>{const total=Number(p.totalTasks||p.tasks||0);const doneN=Number(p.doneTasks||p.done||0);const pct=total>0?Math.round(doneN/total*100):0;return`<div class="proj-item"><div class="pdot" style="background:${p.color}"></div><div class="proj-info"><div class="proj-name">${p.name}</div><div class="proj-meta">${doneN}/${total} task · ${fmtDateStr(p.deadline)}</div><div class="proj-bar"><div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div></div></div><div class="proj-pct">${pct}%</div></div>`;}).join('')}
+          ${projects.map(p=>{const total=Number(p.totalTasks||p.tasks||0);const doneN=Number(p.doneTasks||p.done||0);const pct=total>0?Math.round(doneN/total*100):0;return`<div class="proj-item"><div class="pdot" style="background:${p.color}"></div><div class="proj-info"><div class="proj-name">${p.name}</div><div class="proj-meta">${doneN}/${total} task · ${(p.deadline||'').replace(/T.*/,'') || p.deadline || '—'}</div><div class="proj-bar"><div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div></div></div><div class="proj-pct">${pct}%</div></div>`;}).join('')}
         </div>
         <div class="panel">
           <div class="ph"><span class="ph-title">📰 HC News</span><span class="ph-link" onclick="nav('news')">Semua</span></div>
-          ${newsItems.length?newsItems.slice(0,3).map((n, i)=>`<div class="news-item" onclick="openNewsDetail(${i})"><span class="ncat" style="${catStyle[n.category]||''}">${n.category}</span><div class="ntitle">${n.title}</div><div class="nsumm">${n.summary||''}</div><div class="nmeta">${n.source} · ${n.timeAgo}</div></div>`).join(''):newsLoading?`<div style="padding:14px;text-align:center;font-size:11px;color:var(--tx3)" class="loading-pulse">Memuat berita...</div>`:`<div style="padding:14px;text-align:center;font-size:11px;color:var(--tx3);cursor:pointer" onclick="fetchNews()">Klik untuk muat berita HC →</div>`}
+          ${newsItems.length?newsItems.slice(0,3).map((n, i)=>`<div class="news-item" onclick="openNewsDetail(${i})"><span class="ncat" style="${catStyle[n.category]||''}">${n.category}</span><div class="ntitle">${n.title}</div><div class="nmeta">${n.source} · ${n.timeAgo}</div></div>`).join(''):newsLoading?`<div style="padding:14px;text-align:center;font-size:11px;color:var(--tx3)" class="loading-pulse">Memuat berita...</div>`:`<div style="padding:14px;text-align:center;font-size:11px;color:var(--tx3);cursor:pointer" onclick="fetchNews()">Klik untuk muat berita HC →</div>`}
         </div>
       </div>
     </div>`;
@@ -773,19 +586,19 @@ function render(){
       <div style="padding:8px">
         ${tasks.filter(col.filter).map(t=>`
         <div class="kcard" draggable="true"
-          ondragstart='dragTask(event,${JSON.stringify(t.id)})'
+          ondragstart="dragTask(event,${JSON.stringify(t.id)})"
           style="cursor:grab;user-select:none">
           <div class="kcard-title">${t.name}</div>
           <div style="margin-bottom:5px">
-            <span class="ptag" style="font-size:10px;${getProjStyle(t.project)}; font-weight:600">${t.project}</span>
+            <span class="ptag" style="font-size:10px;background:${pBg[t.project]||'var(--bg2)'};color:${pTx[t.project]||'var(--tx2)'}">${t.project}</span>
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <span class="prio ${t.prio==='high'?'ph-prio':t.prio==='med'?'pm-prio':'pl-prio'}" style="font-size:9.5px">${t.prio}</span>
             <span class="kcard-meta">${fmtDue(t.due)}</span>
           </div>
           <div style="display:flex;gap:4px">
-            <button onclick='moveTask(${JSON.stringify(t.id)},"prev")' style="flex:1;padding:3px;border-radius:5px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;font-size:10px;color:var(--tx2)" title="Mundur">←</button>
-            <button onclick='moveTask(${JSON.stringify(t.id)},"next")' style="flex:1;padding:3px;border-radius:5px;border:1px solid var(--bd);background:var(--acc);cursor:pointer;font-size:10px;color:#fff" title="Maju">→</button>
+            <button onclick="moveTask(${JSON.stringify(t.id)},'prev')" style="flex:1;padding:3px;border-radius:5px;border:1px solid var(--bd);background:var(--bg2);cursor:pointer;font-size:10px;color:var(--tx2)" title="Mundur">←</button>
+            <button onclick="moveTask(${JSON.stringify(t.id)},'next')" style="flex:1;padding:3px;border-radius:5px;border:1px solid var(--bd);background:var(--acc);cursor:pointer;font-size:10px;color:#fff" title="Maju">→</button>
           </div>
           ${t.progress>0&&!t.done?`<div class="kcard-bar" style="margin-top:6px"><div class="kcard-bar-fill" style="width:${t.progress}%"></div></div>`:''}
         </div>`).join('')}
@@ -794,30 +607,8 @@ function render(){
     </div>`).join('')}
   </div>`;
 
-  } else if(view==='projects'){
-    c.innerHTML=`<div class="panel">
-      <div class="ph">
-        <span class="ph-title">Projects aktif (${projects.length})</span>
-        <button class="btn primary" onclick="openProjectModal()" style="font-size:11px;padding:4px 12px">+ Project baru</button>
-      </div>
-      ${projects.map(p=>{
-        const total=Number(p.totalTasks||p.tasks||0);
-        const doneN=Number(p.doneTasks||p.done||0);
-        const pct=total>0?Math.round(doneN/total*100):0;
-        const pid=p.id||p.name;
-        return`<div class="proj-item" style="padding:13px 16px; cursor:pointer;" onclick="openProjectModal('${pid}')">
-          <div class="pdot" style="background:${p.color};width:10px;height:10px"></div>
-          <div class="proj-info">
-            <div class="proj-name">${p.name}</div>
-            <div class="proj-meta">${doneN} dari ${total} task selesai · Deadline: ${fmtDateStr(p.deadline)}</div>
-            <div class="proj-bar" style="height:5px;margin-top:7px">
-              <div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div>
-            </div>
-          </div>
-          <div class="proj-pct" style="font-size:14px">${pct}%</div>
-        </div>`;
-      }).join('')}
-    </div>`;
+} else if(view==='projects'){
+    c.innerHTML=`<div class="panel"><div class="ph"><span class="ph-title">Projects aktif (${projects.length})</span><button class="btn primary" style="font-size:11px;padding:4px 12px">+ Project baru</button></div>${projects.map(p=>{const total=Number(p.totalTasks||p.tasks||0);const doneN=Number(p.doneTasks||p.done||0);const pct=total>0?Math.round(doneN/total*100):0;return`<div class="proj-item" style="padding:13px 16px"><div class="pdot" style="background:${p.color};width:10px;height:10px"></div><div class="proj-info"><div class="proj-name">${p.name}</div><div class="proj-meta">${doneN} dari ${total} task selesai · Deadline: ${p.deadline||'—'}</div><div class="proj-bar" style="height:5px;margin-top:7px"><div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div></div></div><div class="proj-pct" style="font-size:14px">${pct}%</div></div>`;}).join('')}</div>`;
   } else if(view==='news'){
     c.innerHTML=`
     <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
@@ -848,11 +639,7 @@ function openNewsDetail(index) {
     document.getElementById('dm-action-container').innerHTML = `<button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>`;
   } else {
     document.getElementById('dm-meta').innerHTML = `<span class="ncat" style="${catStyle[news.category]||''}">${news.category}</span> · ${news.source} · ${news.timeAgo}`;
-    
-    // Menerapkan Markdown Parse di Detail Berita
-    const rawContent = news.summary + "\n\n✦ Di-generate oleh Gemini. Klik 'Cari Artikel' untuk membaca berita selengkapnya di Google.";
-    document.getElementById('dm-content').innerHTML = `<div class="md-content">${marked.parse(rawContent)}</div>`;
-    
+    document.getElementById('dm-content').textContent = news.summary + "\n\n✦ Di-generate oleh Gemini. Klik 'Cari Artikel' untuk membaca berita selengkapnya di Google.";
     const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(news.title + ' ' + news.source)}`;
     document.getElementById('dm-action-container').innerHTML = `
       <button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>
@@ -865,7 +652,7 @@ function openNewsDetail(index) {
 
 async function generateNewsletter(){
   const taskList=tasks.filter(t=>!t.done).slice(0,5).map(t=>`- ${t.name}`).join('\n');
-  const prompt=`Buatkan daily HC newsletter dalam Bahasa Indonesia untuk Araw. Hari ini: ${todayFmt}\nTask terbuka: ${tasks.filter(t=>!t.done).length} task:\n${taskList}\n\nFormat:\n📌 Subject line menarik\n\nSalam pembuka personal untuk Araw\n\n3 headline berita HC/AI terkini\n\n💡 Tips HC minggu ini\n\n📚 1 rekomendasi kursus gratis\n\nPenutup motivasi\n\n— HRFlow · Logique\n\nBahasa santai tapi profesional, gunakan format Markdown yang rapi (bold, bullet points). Maksimal 250 kata.`;
+  const prompt=`Buatkan daily HC newsletter dalam Bahasa Indonesia untuk Araw. Hari ini: ${todayFmt}\nTask terbuka: ${tasks.filter(t=>!t.done).length} task:\n${taskList}\n\nFormat:\n📌 Subject line menarik\n\nSalam pembuka personal untuk Araw\n\n3 headline berita HC/AI terkini\n\n💡 Tips HC minggu ini\n\n📚 1 rekomendasi kursus gratis\n\nPenutup motivasi\n\n— HRFlow · Logique\n\nBahasa santai tapi profesional, max 250 kata.`;
   
   try {
     document.getElementById('detail-modal').style.display = 'flex';
@@ -878,10 +665,7 @@ async function generateNewsletter(){
     
     document.getElementById('dm-title').textContent = "📧 Daily HC Newsletter";
     document.getElementById('dm-meta').textContent = "Dikurasi khusus untuk Araw oleh Gemini AI";
-    
-    // Menerapkan Markdown Parse di Newsletter
-    document.getElementById('dm-content').innerHTML = `<div class="md-content">${marked.parse(result)}</div>`;
-    
+    document.getElementById('dm-content').textContent = result;
     document.getElementById('dm-action-container').innerHTML = `
       <button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>
       <button class="btn primary" onclick="alert('Fitur kirim ke prawala@logique.co.id akan dikerjakan di tahap integrasi Google Workspace!')">Kirim Email</button>
@@ -893,14 +677,22 @@ async function generateNewsletter(){
   }
 }
 
+
+// ── KANBAN DRAG & DROP + MOVE ─────────────────────────────────
 let draggedTaskId = null;
-function dragTask(event, id){ draggedTaskId = id; event.dataTransfer.effectAllowed = 'move'; }
+
+function dragTask(event, id){
+  draggedTaskId = id;
+  event.dataTransfer.effectAllowed = 'move';
+}
+
 function dropTask(event, colKey){
   event.preventDefault();
   if(!draggedTaskId) return;
   moveTaskToCol(draggedTaskId, colKey);
   draggedTaskId = null;
 }
+
 function moveTask(id, direction){
   const t = tasks.find(x=>String(x.id)===String(id));
   if(!t) return;
@@ -910,6 +702,7 @@ function moveTask(id, direction){
   if(direction==='next' && idx<2) moveTaskToCol(id, cols[idx+1]);
   if(direction==='prev' && idx>0) moveTaskToCol(id, cols[idx-1]);
 }
+
 async function moveTaskToCol(id, colKey){
   const t = tasks.find(x=>String(x.id)===String(id));
   if(!t) return;
@@ -920,12 +713,26 @@ async function moveTaskToCol(id, colKey){
   await dbPost({action:'updateTask', task:t});
 }
 
+
+function updateProgress(id){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  const val=prompt(`Update progress "${t.name}" (0-100%):`, t.progress);
+  if(val===null)return;
+  const num=Math.min(100,Math.max(0,parseInt(val)||0));
+  t.progress=num;
+  if(num===100){t.done=true;}
+  updateBadge();render();
+  dbPost({action:'updateTask',task:t});
+}
+
+
 function openTaskDetail(id){
   const t=tasks.find(x=>String(x.id)===String(id));
   if(!t)return;
   const tid=JSON.stringify(id);
-  const projStyle = getProjStyle(t.project);
-  
+  const catStyle_=pBg[t.project]||'var(--bg2)';
+  const catTx_=pTx[t.project]||'var(--tx2)';
   let el=document.getElementById('task-detail-modal');
   if(el)el.remove();
   el=document.createElement('div');
@@ -934,12 +741,11 @@ function openTaskDetail(id){
   el.onclick=function(e){if(e.target===el)el.remove();};
   const prioLabel=t.prio==='high'?'High':t.prio==='med'?'Medium':'Low';
   const prioStyle=t.prio==='high'?'background:var(--red-bg);color:var(--red-tx)':t.prio==='med'?'background:var(--ylw-bg);color:var(--ylw-tx)':'background:var(--grn-bg);color:var(--grn-tx)';
-  
   el.innerHTML=`<div style="background:var(--bg1);border:1px solid var(--bd);border-radius:16px;padding:0;width:100%;max-width:480px;overflow:hidden">
     <div style="padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
       <div>
         <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-          <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;${projStyle}">${t.project}</span>
+          <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:${catStyle_};color:${catTx_}">${t.project}</span>
           <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;${prioStyle}">${prioLabel}</span>
           ${t.done?'<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--grn-bg);color:var(--grn-tx)">✓ Done</span>':''}
         </div>
@@ -966,19 +772,15 @@ function openTaskDetail(id){
       ${t.notes?`<div style="background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:14px;font-size:12.5px;color:var(--tx2);line-height:1.6">${t.notes}</div>`:''}
     </div>
     <div style="padding:12px 20px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-wrap:wrap">
-      <button onclick='event.stopPropagation();openModal(${tid})' 
-        class="btn" style="font-size:11px; flex:1">
-        ✏️ Edit Task
-      </button>
-      <button onclick='event.stopPropagation();toggleTask(${tid});document.getElementById("task-detail-modal").remove()' 
+      <button onclick="event.stopPropagation();toggleTask(${tid});document.getElementById('task-detail-modal').remove()" 
         class="btn ${t.done?'':'primary'}" style="font-size:11px;flex:1">
         ${t.done?'↩ Tandai belum selesai':'✓ Tandai selesai'}
       </button>
-      <button onclick='event.stopPropagation();openProgressModal(${tid})' 
+      <button onclick="event.stopPropagation();document.getElementById('task-detail-modal').remove();updateProgress(${tid})" 
         class="btn" style="font-size:11px">
         📊 Update %
       </button>
-      <button onclick='event.stopPropagation();deleteTaskConfirm(${tid})' 
+      <button onclick="event.stopPropagation();deleteTaskConfirm(${tid})" 
         class="btn" style="font-size:11px;color:var(--red-tx);border-color:var(--red-bg)">
         🗑 Hapus
       </button>
