@@ -1,8 +1,6 @@
 {
   "outputDirectory": "public",
   "functions": {
-    "api/gemini.js": {
-      "maxDuration": 30
-    }
+    "api/gemini.js": { "maxDuration": 30 }
   }
 }
