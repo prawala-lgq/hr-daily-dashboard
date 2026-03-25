@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — MODAL.JS
-// Modals — task detail popup, newsletter popup
+// Task detail popup dan delete confirm
 // ============================================================
 
 function openTaskDetail(id){
