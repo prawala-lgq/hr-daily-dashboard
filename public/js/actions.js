@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — ACTIONS.JS
-// Task actions — update progress, delete, archive
+// Task actions — update progress
 // ============================================================
 
 function updateProgress(id){
