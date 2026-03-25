@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — KANBAN.JS
-// Kanban drag & drop — pindahkan task antar kolom
+// Kanban drag & drop
 // ============================================================
 
 // ── KANBAN DRAG & DROP + MOVE ─────────────────────────────────
