@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — UI.JS
-// UI helpers — dark mode, modal, navigation, status indicator
+// UI — dark mode, nav, modal, saveTask, toggleTask
 // ============================================================
 
 function toggleDark(){dark=!dark;document.getElementById('app').classList.toggle('dark',dark);document.getElementById('theme-btn').textContent=dark?'☀️':'🌙'}
