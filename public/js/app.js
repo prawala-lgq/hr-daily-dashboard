@@ -1,9 +1,5 @@
-// ============================================================
 // HRFlow — APP.JS
-// Entry point — jalankan app saat halaman load
-// ============================================================
+// Entry point
 
-document.addEventListener('DOMContentLoaded', function() {
-  updateBadge();
-  loadFromDB();
-});
+updateBadge();
+loadFromDB();
