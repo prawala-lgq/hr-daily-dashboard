@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — RENDER.JS
-// Render views — dashboard, tasks, kanban, projects, news
+// Render semua views
 // ============================================================
 
 function render(){
