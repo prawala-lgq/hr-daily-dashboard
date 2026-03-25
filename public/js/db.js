@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — DB.JS
-// Database — Google Apps Script, loadFromDB, renderSidebar, helpers
+// Database — Google Apps Script, loadFromDB, helpers
 // ============================================================
 
 async function dbGet(action){
