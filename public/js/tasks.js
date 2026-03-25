@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — TASKS.JS
-// Task rendering — tampilkan baris task di list
+// Task row rendering
 // ============================================================
 
 function taskRow(t){
