@@ -1,7 +1,55 @@
 // ============================================================
 // HRFlow — GEMINI.JS
-// Gemini AI — briefing harian, berita HC, dan newsletter
+// Gemini AI & cache — callGemini, cache, briefing, berita
 // ============================================================
+
+async function callGemini(prompt, requireJson = false){
+  // API key aman — dipanggil via Netlify Function, tidak terekspos di browser
+  const payload = { contents: [{ parts: [{ text: prompt }] }] };
+  if(requireJson) payload.generationConfig = { responseMimeType: 'application/json' };
+
+  const res = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  if(!res.ok || data.error) throw new Error(data.error?.message || 'Gagal menghubungi Gemini');
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
+// ── DAILY CACHE (localStorage) ────────────────────────────────
+// Semua AI content di-cache per hari → hemat token, tidak generate ulang saat refresh
+const CACHE_KEY_BRIEF = 'hrflow_brief';
+const CACHE_KEY_NEWS  = 'hrflow_news';
+
+function getCacheDate(){ return new Date().toISOString().split('T')[0]; }
+
+function saveCache(key, data){
+  try{
+    localStorage.setItem(key, JSON.stringify({ date: getCacheDate(), data }));
+  }catch(e){}
+}
+
+function loadCache(key){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return null;
+    const parsed = JSON.parse(raw);
+    if(parsed.date !== getCacheDate()) return null; // expired (hari berbeda)
+    return parsed.data;
+  }catch(e){ return null; }
+}
+
+function clearTodayCache(){
+  localStorage.removeItem(CACHE_KEY_BRIEF);
+  localStorage.removeItem(CACHE_KEY_NEWS);
+  briefText=''; newsItems=[];
+  fetchBriefing(); fetchNews();
+  showDBStatus('Cache direset, regenerating...');
+  setTimeout(hideDBStatus, 2000);
+}
 
 async function fetchBriefing(forceRefresh=false){
   if(briefLoading) return;
