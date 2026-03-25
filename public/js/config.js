@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — CONFIG.JS
-// Konfigurasi, konstanta, state global, dan data default
+// State, konstanta, project colors, data default
 // ============================================================
 
 // STATE
@@ -43,11 +43,3 @@ const DEFAULT_TASKS=[
   {id:'t5',name:'Kirim offer letter — Anisa S.',project:'Recruitment 2024',due:'2026-03-15',prio:'med',progress:90,done:false,notes:''},
   {id:'t6',name:'Setup Google Meet orientasi karyawan baru',project:'Onboarding Flow',due:'2026-03-18',prio:'low',progress:10,done:false,notes:''},
 ];
-async function dbGet(action){
-  if(!HAS_DB)return null;
-  try{const r=await fetch(GAS_URL+'?action='+action);return await r.json();}catch(e){return null;}
-}
-async function dbPost(body){
-  if(!HAS_DB)return null;
-  try{const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(body)});return await r.json();}catch(e){return null;}
-}
