@@ -23,6 +23,7 @@ async function loadFromDB(){
     renderSidebarProjects();
   }
   hideDBStatus();updateBadge();render();
+  checkDueNotifications();
 }
 
 function renderSidebarProjects(){
