@@ -5,6 +5,7 @@
 
 // STATE
 let dark=false,view='dashboard',briefText='',briefLoading=false,newsItems=[],newsLoading=false;
+let searchQuery='',filterProject='',filterPrio='',filterStatus='all';
 const today=new Date();
 const todayISO=today.toISOString().split('T')[0];
 const todayFmt=today.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
