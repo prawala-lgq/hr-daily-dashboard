@@ -54,8 +54,18 @@ function render(){
     if(!newsItems.length&&!newsLoading)fetchNews();
 
   } else if(view==='tasks'){
-    const sorted=[...tasks.filter(t=>isOverdue(t.due)&&!t.done),...tasks.filter(t=>isToday(t.due)&&!t.done),...tasks.filter(t=>!isOverdue(t.due)&&!isToday(t.due)&&!t.done),...tasks.filter(t=>t.done)];
-    c.innerHTML=`<div class="panel"><div class="ph"><span class="ph-title">Semua task (${tasks.length})</span><button class="btn primary" onclick="openModal()" style="font-size:11px;padding:4px 12px">+ Tambah task</button></div>${sorted.map(taskRow).join('')}</div>`;
+    const filtered=getFilteredTasks();
+    const sorted=[
+      ...filtered.filter(t=>isOverdue(t.due)&&!t.done),
+      ...filtered.filter(t=>isToday(t.due)&&!t.done),
+      ...filtered.filter(t=>!isOverdue(t.due)&&!isToday(t.due)&&!t.done),
+      ...filtered.filter(t=>t.done)
+    ];
+    c.innerHTML=`<div class="panel">
+      <div class="ph"><span class="ph-title">My Tasks</span><button class="btn primary" onclick="openModal()" style="font-size:11px;padding:4px 12px">+ Tambah task</button></div>
+      ${renderFilterBar()}
+      ${sorted.length>0?sorted.map(taskRow).join(''):`<div style="padding:32px;text-align:center;color:var(--tx3);font-size:13px">Tidak ada task yang sesuai filter</div>`}
+    </div>`;
   } else if(view==='kanban'){
   document.getElementById('pg-title').textContent='Kanban Board';
   const colDefs=[
