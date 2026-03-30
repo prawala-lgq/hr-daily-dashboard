@@ -139,3 +139,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg0);color:var(--tx1);fon
 @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:4px}
+
+/* Search & Filter */
+#topbar-search::placeholder{color:var(--tx3)}
+#search-input::placeholder{color:var(--tx3)}
+#topbar-search:focus,#search-input:focus{outline:none}
+
+/* Notification banner */
+#due-notif{animation:slideDown .25s ease}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
