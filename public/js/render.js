@@ -14,7 +14,14 @@ function render(){
     const done=tasks.filter(t=>t.done).length;
     const high=open.filter(t=>t.prio==='high').length;
     const briefSection=briefLoading?`<div class="ai-body loading-pulse">✦ Gemini sedang membuat briefing harian kamu...</div>`:briefText?`<div class="ai-body">${briefText}</div>`:`<div class="ai-body" style="color:var(--tx3)">Klik "Gemini Briefing" di atas untuk AI summary harian.</div>`;
-    const priorityTasks=[...open.filter(t=>isOverdue(t.due)||isToday(t.due)||t.prio==='high')].slice(0,5);
+    // Tampilkan task: overdue + due hari ini + high priority + due dalam 7 hari ke depan
+    const isDueWithin7=(d)=>{if(!d)return false;const dt=new Date(d),t=new Date();t.setHours(0,0,0,0);dt.setHours(0,0,0,0);const diff=Math.round((dt-t)/86400000);return diff>0&&diff<=7;};
+    const priorityTasks=[
+      ...open.filter(t=>isOverdue(t.due)),
+      ...open.filter(t=>isToday(t.due)),
+      ...open.filter(t=>t.prio==='high'&&!isOverdue(t.due)&&!isToday(t.due)),
+      ...open.filter(t=>isDueWithin7(t.due)&&t.prio!=='high'),
+    ].filter((t,i,arr)=>arr.findIndex(x=>String(x.id)===String(t.id))===i).slice(0,6);
     c.innerHTML=`
     <div class="ai-brief">
       <div class="ai-header"><div class="ai-orb">✦</div><div><div class="ai-title">Daily Briefing by Gemini</div><div class="ai-date">${todayFmt}</div></div></div>
@@ -35,8 +42,15 @@ function render(){
     </div>
     <div class="panels">
       <div><div class="panel">
-        <div class="ph"><span class="ph-title">Task prioritas hari ini</span><button class="btn" onclick="openModal()" style="font-size:11px;padding:4px 9px">+ Tambah</button></div>
-        ${[...priorityTasks,...tasks.filter(t=>t.done).slice(0,1)].map(taskRow).join('')}
+        <div class="ph"><span class="ph-title">Task prioritas & upcoming <span style="font-size:10px;font-weight:400;color:var(--tx3)">(overdue · hari ini · 7 hari ke depan)</span></span><button class="btn" onclick="openModal()" style="font-size:11px;padding:4px 9px">+ Tambah</button></div>
+        ${priorityTasks.length>0
+        ? priorityTasks.map(taskRow).join('')
+        : `<div style="padding:24px;text-align:center;color:var(--tx3);font-size:12.5px">
+            <div style="font-size:22px;margin-bottom:8px">🎉</div>
+            <div style="font-weight:500;color:var(--tx2);margin-bottom:4px">Semua task beres!</div>
+            <div style="font-size:11.5px">Tidak ada task overdue, due hari ini, atau dalam 7 hari ke depan.</div>
+          </div>`
+      }
         <div style="padding:8px 14px;font-size:11px;color:var(--tx3);text-align:center;cursor:pointer;border-top:1px solid var(--bd)" onclick="nav('tasks')">Lihat semua ${tasks.length} task →</div>
       </div></div>
       <div style="display:flex;flex-direction:column;gap:12px">
