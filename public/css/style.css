@@ -148,3 +148,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg0);color:var(--tx1);fon
 /* Notification banner */
 #due-notif{animation:slideDown .25s ease}
 @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+
+/* Task detail modal - full screen overlay */
+.task-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-start;justify-content:flex-end;padding:0}
+.task-modal-panel{background:var(--bg1);width:520px;height:100vh;overflow-y:auto;border-left:1px solid var(--bd);box-shadow:-4px 0 24px rgba(0,0,0,.12);display:flex;flex-direction:column;animation:slideInRight .2s ease}
+@keyframes slideInRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.task-modal-header{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.task-modal-body{padding:20px;flex:1;overflow-y:auto}
+.task-modal-footer{padding:12px 20px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-shrink:0}
+.task-field-label{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;font-weight:500;margin-bottom:5px}
+.task-field-val{font-size:13px;color:var(--tx1)}
+.task-section{margin-bottom:20px}
+.task-section-title{font-size:11px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.activity-item{display:flex;gap:8px;margin-bottom:10px;font-size:12px}
+.activity-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);flex-shrink:0;margin-top:5px}
+.link-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;background:var(--bg2);border:1px solid var(--bd);font-size:11.5px;color:var(--blu-tx);cursor:pointer;margin:0 4px 4px 0;text-decoration:none}
+.link-chip:hover{background:var(--blu-bg);border-color:var(--blu-bg)}
+.desc-area{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--bg2);font-size:12.5px;color:var(--tx1);font-family:inherit;resize:vertical;min-height:80px;outline:none;line-height:1.6}
+.desc-area:focus{border-color:var(--acc)}
