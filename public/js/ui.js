@@ -41,6 +41,8 @@ async function toggleTask(id){
   if(!t)return;
   t.done=!t.done;if(t.done)t.progress=100;
   updateBadge();render();
+  // Refresh panel if open
+  if(document.getElementById('task-panel')) openTaskDetail(id);
   await dbPost({action:'updateTask',task:t});
 }
 
