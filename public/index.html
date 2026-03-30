@@ -69,8 +69,13 @@
         <p id="pg-sub">Loading...</p>
       </div>
       <div class="tb-right">
-        <button class="btn" onclick="nav('news')">📰 HC News</button>
-        <button class="btn" onclick="loadFromDB()" title="Sync data dari Google Sheets" style="font-size:11px">↻ Sync</button>
+        <div style="display:flex;align-items:center;gap:5px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:5px 10px" onclick="nav('tasks')">
+          <span style="color:var(--tx3);font-size:12px">🔍</span>
+          <input id="topbar-search" type="text" placeholder="Cari task..." style="border:none;background:none;outline:none;font-size:12px;color:var(--tx1);width:130px;font-family:inherit;cursor:pointer"
+            onclick="event.stopPropagation();nav('tasks')"
+            oninput="searchQuery=this.value;if(view!=='tasks')nav('tasks');else render()">
+        </div>
+        <button class="btn" onclick="loadFromDB()" title="Sync" style="font-size:11px">↻</button>
         <button class="btn gem" onclick="triggerBriefing()">✦ Gemini Briefing</button>
         <button class="btn primary" onclick="openModal()">+ Add Task</button>
       </div>
