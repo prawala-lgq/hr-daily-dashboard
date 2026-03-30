@@ -50,15 +50,19 @@ function openTaskDetail(id){
     <div style="padding:12px 20px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-wrap:wrap">
       <button onclick="event.stopPropagation();toggleTask(${tid});document.getElementById('task-detail-modal').remove()" 
         class="btn ${t.done?'':'primary'}" style="font-size:11px;flex:1">
-        ${t.done?'↩ Tandai belum selesai':'✓ Tandai selesai'}
+        ${t.done?'↩ Belum selesai':'✓ Selesai'}
+      </button>
+      <button onclick="event.stopPropagation();document.getElementById('task-detail-modal').remove();editTask(${tid})" 
+        class="btn" style="font-size:11px">
+        ✏️ Edit
       </button>
       <button onclick="event.stopPropagation();document.getElementById('task-detail-modal').remove();updateProgress(${tid})" 
         class="btn" style="font-size:11px">
-        📊 Update %
+        📊 %
       </button>
       <button onclick="event.stopPropagation();deleteTaskConfirm(${tid})" 
         class="btn" style="font-size:11px;color:var(--red-tx);border-color:var(--red-bg)">
-        🗑 Hapus
+        🗑
       </button>
     </div>
   </div>`;
@@ -73,4 +77,46 @@ async function deleteTaskConfirm(id){
   document.getElementById('task-detail-modal')?.remove();
   updateBadge();render();
   await dbPost({action:'deleteTask',id});
+}
+
+async function editTask(id){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+
+  // Populate modal with existing data
+  document.getElementById('f-name').value=t.name||'';
+  document.getElementById('f-due').value=t.due||todayISO;
+  document.getElementById('f-notes').value=t.notes||'';
+  document.getElementById('f-prio').value=t.prio||'med';
+
+  // Set project dropdown
+  const sel=document.getElementById('f-proj');
+  sel.innerHTML=projects.map(p=>`<option value="${p.name}"${p.name===t.project?' selected':''}>${p.name}</option>`).join('');
+
+  // Change modal title and button to indicate editing
+  document.querySelector('#modal h3').textContent='Edit Task';
+  const saveBtn=document.querySelector('#modal .btn.primary');
+  const originalClick=saveBtn.onclick;
+  saveBtn.textContent='Simpan Perubahan';
+  saveBtn.onclick=async function(){
+    const name=document.getElementById('f-name').value.trim();
+    if(!name)return;
+    t.name=name;
+    t.project=document.getElementById('f-proj').value;
+    t.due=document.getElementById('f-due').value;
+    t.prio=document.getElementById('f-prio').value;
+    t.notes=document.getElementById('f-notes').value.trim();
+    closeModal();
+    // Reset modal for next use
+    document.querySelector('#modal h3').textContent='Tambah Task Baru';
+    saveBtn.textContent='Simpan Task';
+    saveBtn.onclick=saveTask;
+    updateBadge();render();
+    showDBStatus('Menyimpan perubahan...');
+    await dbPost({action:'updateTask',task:t});
+    hideDBStatus();
+  };
+
+  document.getElementById('modal').style.display='flex';
+  setTimeout(()=>document.getElementById('f-name').focus(),50);
 }
