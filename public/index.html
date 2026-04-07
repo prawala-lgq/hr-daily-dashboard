@@ -90,7 +90,13 @@
 <div class="modal-overlay" id="modal" style="display:none" onclick="closeModalOutside(event)">
   <div class="modal">
     <h3>Tambah Task Baru</h3>
-    <div class="field"><label>Nama task *</label><input id="f-name" placeholder="e.g. Review CV kandidat Frontend"></div>
+    
+    <div class="field">
+      <label>Nama task *</label>
+      <input id="f-name" list="task-suggestions" placeholder="e.g. Request Installment - Budi" oninput="predictEstimate(this.value)">
+      <datalist id="task-suggestions"></datalist>
+    </div>
+    
     <div class="field"><label>Project</label>
       <select id="f-proj">
         <option>Loading...</option>
