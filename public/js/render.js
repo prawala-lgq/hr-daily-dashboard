@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — RENDER.JS
-// Render semua views
+// Render semua views + AI Tools
 // ============================================================
 
 function render(){
@@ -14,7 +14,7 @@ function render(){
     const done=tasks.filter(t=>t.done).length;
     const high=open.filter(t=>t.prio==='high').length;
     const briefSection=briefLoading?`<div class="ai-body loading-pulse">✦ Gemini sedang membuat briefing harian kamu...</div>`:briefText?`<div class="ai-body">${briefText}</div>`:`<div class="ai-body" style="color:var(--tx3)">Klik "Gemini Briefing" di atas untuk AI summary harian.</div>`;
-    // Tampilkan task: overdue + due hari ini + high priority + due dalam 7 hari ke depan
+    
     const isDueWithin7=(d)=>{if(!d)return false;const dt=new Date(d),t=new Date();t.setHours(0,0,0,0);dt.setHours(0,0,0,0);const diff=Math.round((dt-t)/86400000);return diff>0&&diff<=7;};
     const priorityTasks=[
       ...open.filter(t=>isOverdue(t.due)),
@@ -23,7 +23,6 @@ function render(){
       ...open.filter(t=>isDueWithin7(t.due)&&t.prio!=='high'),
     ].filter((t,i,arr)=>arr.findIndex(x=>String(x.id)===String(t.id))===i).slice(0,6);
 
-    // --- TAMBAHAN LOGIC KPI ---
     const doneTasksWithTime = tasks.filter(t => t.done && t.actualStart && t.completedAt);
     let avgCycleTime = 0;
     if (doneTasksWithTime.length > 0) {
@@ -45,9 +44,11 @@ function render(){
         <span class="chip" onclick="nav('news')">📰 Berita HC hari ini</span>
         <span class="chip" onclick="nav('kanban')">📋 Lihat Kanban</span>
         <span class="chip" onclick="generateNewsletter()">✉ Generate Newsletter</span>
+        <span class="chip" onclick="generateWeeklyReport()">📊 Weekly KPI Report</span>
         <span class="chip" onclick="clearTodayCache()" style="color:var(--tx3)">↺ Reset cache hari ini</span>
       </div>
     </div>
+    
     <div class="stats">
       <div class="stat"><div class="stat-lbl">Task terbuka</div><div class="stat-val">${open.length}</div><div class="stat-note" style="color:var(--ylw-tx)">${high} high priority</div></div>
       <div class="stat"><div class="stat-lbl">Due hari ini</div><div class="stat-val" style="color:${todayT.length?'var(--red-tx)':'inherit'}">${todayT.length}</div><div class="stat-note" style="color:var(--red-tx)">${overdue.length} overdue</div></div>
@@ -55,6 +56,7 @@ function render(){
       <div class="stat" title="Rata-rata hari yang dibutuhkan dari mulai sampai selesai"><div class="stat-lbl">Speed (KPI)</div><div class="stat-val" style="color:var(--acc)">${avgCycleTime}</div><div class="stat-note" style="color:var(--tx3)">hari/task</div></div>
       <div class="stat"><div class="stat-lbl">Projects</div><div class="stat-val">${projects.length}</div><div class="stat-note" style="color:var(--blu-tx)">aktif</div></div>
     </div>
+    
     <div class="panels">
       <div><div class="panel">
         <div class="ph"><span class="ph-title">Task prioritas & upcoming <span style="font-size:10px;font-weight:400;color:var(--tx3)">(overdue · hari ini · 7 hari ke depan)</span></span><button class="btn" onclick="openModal()" style="font-size:11px;padding:4px 9px">+ Tambah</button></div>
@@ -137,7 +139,7 @@ function render(){
     </div>`).join('')}
   </div>`;
 } else if(view==='projects'){
-    c.innerHTML=`<div class="panel"><div class="ph"><span class="ph-title">Projects aktif (${projects.length})</span><button class="btn primary" style="font-size:11px;padding:4px 12px">+ Project baru</button></div>${projects.map(p=>{const total=Number(p.totalTasks||p.tasks||0);const doneN=Number(p.doneTasks||p.done||0);const pct=total>0?Math.round(doneN/total*100):0;return`<div class="proj-item" style="padding:13px 16px"><div class="pdot" style="background:${p.color};width:10px;height:10px"></div><div class="proj-info"><div class="proj-name">${p.name}</div><div class="proj-meta">${doneN} dari ${total} task selesai · Deadline: ${p.deadline||'—'}</div><div class="proj-bar" style="height:5px;margin-top:7px"><div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div></div></div><div class="proj-pct" style="font-size:14px">${pct}%</div></div>`;}).join('')}</div>`;
+    c.innerHTML=`<div class="panel"><div class="ph"><span class="ph-title">Projects aktif (${projects.length})</span><button class="btn primary" onclick="openProjModal()" style="font-size:11px;padding:4px 12px">+ Project baru</button></div>${projects.map(p=>{const total=Number(p.totalTasks||p.tasks||0);const doneN=Number(p.doneTasks||p.done||0);const pct=total>0?Math.round(doneN/total*100):0;return`<div class="proj-item" style="padding:13px 16px"><div class="pdot" style="background:${p.color};width:10px;height:10px"></div><div class="proj-info"><div class="proj-name">${p.name}</div><div class="proj-meta">${doneN} dari ${total} task selesai · Deadline: ${p.deadline||'—'}</div><div class="proj-bar" style="height:5px;margin-top:7px"><div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div></div></div><div class="proj-pct" style="font-size:14px">${pct}%</div></div>`;}).join('')}</div>`;
 } else if(view==='news'){
     c.innerHTML=`
     <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
@@ -199,6 +201,43 @@ async function generateNewsletter(){
   } catch(e) {
     document.getElementById('dm-title').textContent = "Error";
     document.getElementById('dm-content').textContent = "Gagal memuat: " + e.message;
+    document.getElementById('dm-action-container').innerHTML = `<button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>`;
+  }
+}
+
+// ── AI WEEKLY KPI REPORT ───────────────────────────────────────
+async function generateWeeklyReport() {
+  const doneTasks = tasks.filter(t => t.done && t.actualStart && t.completedAt);
+  const openTasks = tasks.filter(t => !t.done);
+  
+  let avgTime = 0;
+  if (doneTasks.length > 0) {
+    const totalDays = doneTasks.reduce((sum, t) => {
+      const start = new Date(t.actualStart);
+      const end = new Date(t.completedAt);
+      return sum + Math.max(1, Math.round((end - start) / 86400000));
+    }, 0);
+    avgTime = (totalDays / doneTasks.length).toFixed(1);
+  }
+  
+  const prompt = `Buatkan evaluasi performa mingguan (Weekly Performance Report) bergaya Project Manager untuk Araw.\n\nData minggu ini:\n- Task selesai: ${doneTasks.length}\n- Rata-rata kecepatan (Cycle Time): ${avgTime} hari/task\n- Sisa task terbuka: ${openTasks.length}\n\nBerikan 3 poin:\n1. Apresiasi kinerja\n2. Analisa singkat (apakah kecepatan ${avgTime} hari per task ini bagus)\n3. Saran untuk sisa ${openTasks.length} task terbuka.\n\nGunakan Bahasa Indonesia, santai tapi profesional, max 200 kata.`;
+  
+  try {
+    document.getElementById('detail-modal').style.display = 'flex';
+    document.getElementById('dm-title').textContent = "Membuat Weekly Report...";
+    document.getElementById('dm-meta').textContent = "Gemini sedang menganalisa data KPI kamu ✦";
+    document.getElementById('dm-content').innerHTML = '<div class="loading-pulse">Menganalisa performa kecepatan pengerjaan...</div>';
+    document.getElementById('dm-action-container').innerHTML = '';
+    
+    const result = await callGemini(prompt, false);
+    
+    document.getElementById('dm-title').textContent = "📊 Weekly Performance Report";
+    document.getElementById('dm-meta').textContent = "AI Analysis by Gemini";
+    document.getElementById('dm-content').textContent = result;
+    document.getElementById('dm-action-container').innerHTML = `<button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>`;
+  } catch(e) {
+    document.getElementById('dm-title').textContent = "Error";
+    document.getElementById('dm-content').textContent = "Gagal memuat AI: " + e.message;
     document.getElementById('dm-action-container').innerHTML = `<button class="btn" onclick="document.getElementById('detail-modal').style.display='none'">Tutup</button>`;
   }
 }
