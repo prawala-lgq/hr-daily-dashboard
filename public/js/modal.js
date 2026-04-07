@@ -1,29 +1,53 @@
-// ============================================================
-// HRFlow — MODAL.JS
-// Task detail popup dan delete confirm
-// ============================================================
-
 function openTaskDetail(id){
   const t=tasks.find(x=>String(x.id)===String(id));
   if(!t)return;
   const tid=JSON.stringify(id);
-
-  // Remove existing panel
   document.getElementById('task-panel')?.remove();
 
   const prioLabel=t.prio==='high'?'High':t.prio==='med'?'Medium':'Low';
   const prioStyle=t.prio==='high'?'ph-prio':t.prio==='med'?'pm-prio':'pl-prio';
   const projBgC=pBg[t.project]||'var(--bg2)';
   const projTxC=pTx[t.project]||'var(--tx2)';
+  
+  // Format tanggal
   const dueStr=t.due?new Date(t.due).toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric'}):'Belum diset';
   const createdStr=t.createdAt?new Date(t.createdAt).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}):'—';
   const links=t.links?JSON.parse(t.links):[];
+
+  // Logic Hitung KPI untuk Panel
+  let kpiStatus = 'Belum Dimulai';
+  let kpiColor = 'var(--tx3)';
+  
+  if (t.actualStart) {
+    if (t.done && t.completedAt) {
+      // Hitung durasi penyelesaian
+      const start = new Date(t.actualStart);
+      const end = new Date(t.completedAt);
+      const diffDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
+      const est = t.estDuration || 0;
+      
+      if (est > 0 && diffDays > est) {
+        kpiStatus = `Selesai (${diffDays} hari, over target)`;
+        kpiColor = 'var(--red-tx)';
+      } else {
+        kpiStatus = `Selesai (${diffDays} hari, on-track)`;
+        kpiColor = 'var(--grn)';
+      }
+    } else {
+       kpiStatus = 'Sedang Dikerjakan';
+       kpiColor = 'var(--ylw-tx)';
+    }
+  }
+
+  const tgtStr = t.targetStart ? new Date(t.targetStart).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '—';
+  const estStr = t.estDuration ? `${t.estDuration} hari` : '—';
 
   const overlay=document.createElement('div');
   overlay.id='task-panel';
   overlay.className='task-modal-overlay';
   overlay.onclick=function(e){if(e.target===overlay)closeTaskPanel();};
-
+  
+  // Ubah grid template jadi 3 kolom x 2 baris (6 kotak)
   overlay.innerHTML=`
   <div class="task-modal-panel">
     <div class="task-modal-header">
@@ -35,7 +59,6 @@ function openTaskDetail(id){
     </div>
 
     <div class="task-modal-body">
-      <!-- Title -->
       <div style="margin-bottom:16px">
         <div id="task-title-display" style="font-size:18px;font-weight:600;color:var(--tx1);line-height:1.35;cursor:pointer;padding:6px 8px;border-radius:8px;margin:-6px -8px" 
           onclick="toggleTitleEdit(${tid})" title="Klik untuk edit">${t.name}</div>
@@ -45,7 +68,6 @@ function openTaskDetail(id){
           onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cancelTitleEdit()">
       </div>
 
-      <!-- Progress bar -->
       <div style="margin-bottom:18px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
           <span class="task-field-label">Progress</span>
@@ -61,27 +83,34 @@ function openTaskDetail(id){
         </div>
       </div>
 
-      <!-- Meta grid -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
         <div style="background:var(--bg2);border-radius:8px;padding:10px">
           <div class="task-field-label">Due date</div>
           <div class="task-field-val" style="color:${t.due&&new Date(t.due)<new Date()?'var(--red-tx)':'var(--tx1)'}">${dueStr}</div>
         </div>
         <div style="background:var(--bg2);border-radius:8px;padding:10px">
-          <div class="task-field-label">Status</div>
-          <div class="task-field-val">${t.done?'✓ Selesai':'⏳ On Progress'}</div>
+          <div class="task-field-label">Target Start</div>
+          <div class="task-field-val">${tgtStr}</div>
         </div>
         <div style="background:var(--bg2);border-radius:8px;padding:10px">
+          <div class="task-field-label">Estimasi</div>
+          <div class="task-field-val">${estStr}</div>
+        </div>
+        
+        <div style="background:var(--bg2);border-radius:8px;padding:10px">
           <div class="task-field-label">Project</div>
-          <div class="task-field-val">${t.project}</div>
+          <div class="task-field-val" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.project}</div>
         </div>
         <div style="background:var(--bg2);border-radius:8px;padding:10px">
           <div class="task-field-label">Dibuat</div>
           <div class="task-field-val">${createdStr}</div>
         </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:10px;grid-column: span 1;">
+          <div class="task-field-label">Perfomance</div>
+          <div class="task-field-val" style="color:${kpiColor}; font-size:11.5px; font-weight:500;">${kpiStatus}</div>
+        </div>
       </div>
 
-      <!-- Description -->
       <div class="task-section">
         <div class="task-section-title">📝 Deskripsi & Catatan</div>
         <textarea class="desc-area" id="task-desc-${t.id}" placeholder="Tambahkan deskripsi, catatan, atau konteks task ini..."
@@ -89,7 +118,6 @@ function openTaskDetail(id){
         <div style="font-size:10.5px;color:var(--tx3);margin-top:4px">Klik di luar untuk simpan otomatis</div>
       </div>
 
-      <!-- Links -->
       <div class="task-section">
         <div class="task-section-title">🔗 Links & Referensi</div>
         <div id="links-list-${t.id}">
@@ -106,7 +134,6 @@ function openTaskDetail(id){
         </div>
       </div>
 
-      <!-- Activity -->
       <div class="task-section">
         <div class="task-section-title">📋 Activity</div>
         <div id="activity-list-${t.id}">
@@ -132,126 +159,31 @@ function openTaskDetail(id){
       <button onclick="deleteTaskConfirm(${tid})" class="btn" style="font-size:12px;color:var(--red-tx);border-color:var(--red-bg)">🗑</button>
     </div>
   </div>`;
-
   document.body.appendChild(overlay);
 }
 
-function closeTaskPanel(){
-  document.getElementById('task-panel')?.remove();
-}
-
-function toggleTitleEdit(id){
-  const disp=document.getElementById('task-title-display');
-  const inp=document.getElementById('task-title-input');
-  if(!disp||!inp)return;
-  disp.style.display='none';
-  inp.style.display='block';
-  inp.focus();inp.select();
-}
-
-function cancelTitleEdit(){
-  const disp=document.getElementById('task-title-display');
-  const inp=document.getElementById('task-title-input');
-  if(disp)disp.style.display='block';
-  if(inp)inp.style.display='none';
-}
-
-async function saveTitleEdit(id,newName){
-  if(!newName.trim())return cancelTitleEdit();
-  const t=tasks.find(x=>String(x.id)===String(id));
-  if(!t)return;
-  t.name=newName.trim();
-  cancelTitleEdit();
-  const disp=document.getElementById('task-title-display');
-  if(disp)disp.textContent=t.name;
-  render();
-  await dbPost({action:'updateTask',task:t});
-}
-
-async function quickUpdateProgress(id,val){
-  const t=tasks.find(x=>String(x.id)===String(id));
-  if(!t)return;
-  t.progress=parseInt(val);
-  if(t.progress===100)t.done=true;
-  const bar=document.getElementById('prog-bar-fill');
-  if(bar)bar.style.width=val+'%';
-  render();
-  await dbPost({action:'updateTask',task:t});
-}
-
-async function saveTaskDesc(id,desc){
-  const t=tasks.find(x=>String(x.id)===String(id));
-  if(!t)return;
-  t.notes=desc;
-  await dbPost({action:'updateTask',task:t});
-}
-
-async function addLink(id,type){
-  const url=prompt(type==='jira'?'Masukkan URL Jira ticket:':type==='trello'?'Masukkan URL Trello card:':type==='gdrive'?'Masukkan URL Google Drive:':'Masukkan URL:');
-  if(!url||!url.trim())return;
-  const label=prompt('Label link (kosongkan untuk pakai URL):','')||url;
-  const t=tasks.find(x=>String(x.id)===String(id));
-  if(!t)return;
-  const links=t.links?JSON.parse(t.links):[];
-  links.push({url:url.trim(),label:label.trim(),type});
-  t.links=JSON.stringify(links);
-  openTaskDetail(id);
-  await dbPost({action:'updateTask',task:t});
-}
-
-async function removeLink(id,idx){
-  const t=tasks.find(x=>String(x.id)===String(id));
-  if(!t)return;
-  const links=t.links?JSON.parse(t.links):[];
-  links.splice(idx,1);
-  t.links=JSON.stringify(links);
-  openTaskDetail(id);
-  await dbPost({action:'updateTask',task:t});
-}
-
-async function addActivity(id,text){
-  if(!text||!text.trim())return;
-  const t=tasks.find(x=>String(x.id)===String(id));
-  if(!t)return;
-  const activity=t.activity?JSON.parse(t.activity):[];
-  const now=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-  activity.push({text:text.trim(),time:now});
-  t.activity=JSON.stringify(activity);
-  const inp=document.getElementById(`activity-input-${id}`);
-  if(inp)inp.value='';
-  openTaskDetail(id);
-  await dbPost({action:'updateTask',task:t});
-}
-
-
-async function deleteTaskConfirm(id){
-  const t=tasks.find(x=>String(x.id)===String(id));
-  if(!t)return;
-  if(!confirm('Hapus task "'+t.name+'"?'))return;
-  tasks=tasks.filter(x=>String(x.id)!==String(id));
-  document.getElementById('task-detail-modal')?.remove();
-  updateBadge();render();
-  await dbPost({action:'deleteTask',id});
-}
-
+// Update fungsi editTask biar nangkap field baru
 async function editTask(id){
   const t=tasks.find(x=>String(x.id)===String(id));
   if(!t)return;
 
-  // Populate modal with existing data
   document.getElementById('f-name').value=t.name||'';
   document.getElementById('f-due').value=t.due||todayISO;
   document.getElementById('f-notes').value=t.notes||'';
   document.getElementById('f-prio').value=t.prio||'med';
+  
+  // Set value KPI
+  const tgtStart = document.getElementById('f-tgt-start');
+  if(tgtStart) tgtStart.value = t.targetStart || '';
+  const estDur = document.getElementById('f-est-dur');
+  if(estDur) estDur.value = t.estDuration || '';
 
-  // Set project dropdown
   const sel=document.getElementById('f-proj');
   sel.innerHTML=projects.map(p=>`<option value="${p.name}"${p.name===t.project?' selected':''}>${p.name}</option>`).join('');
-
-  // Change modal title and button to indicate editing
+  
   document.querySelector('#modal h3').textContent='Edit Task';
   const saveBtn=document.querySelector('#modal .btn.primary');
-  const originalClick=saveBtn.onclick;
+  
   saveBtn.textContent='Simpan Perubahan';
   saveBtn.onclick=async function(){
     const name=document.getElementById('f-name').value.trim();
@@ -261,8 +193,14 @@ async function editTask(id){
     t.due=document.getElementById('f-due').value;
     t.prio=document.getElementById('f-prio').value;
     t.notes=document.getElementById('f-notes').value.trim();
+    
+    // Save KPI changes
+    const tgtInput = document.getElementById('f-tgt-start');
+    if (tgtInput) t.targetStart = tgtInput.value;
+    const estInput = document.getElementById('f-est-dur');
+    if (estInput) t.estDuration = parseInt(estInput.value) || 0;
+
     closeModal();
-    // Reset modal for next use
     document.querySelector('#modal h3').textContent='Tambah Task Baru';
     saveBtn.textContent='Simpan Task';
     saveBtn.onclick=saveTask;
