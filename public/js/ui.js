@@ -35,10 +35,9 @@ function openModal(){
   const sel=document.getElementById('f-proj');
   sel.innerHTML=projects.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
   
-  // UPDATE: Populate Datalist buat Smart Autocomplete nama Task
+  // Populate Datalist buat Smart Autocomplete nama Task
   const dataList = document.getElementById('task-suggestions');
   if(dataList) {
-    // Ambil semua nama task unik dari aktif maupun archive
     const allNames = [...tasks, ...archive].map(t => t.name);
     const uniqueNames = [...new Set(allNames)];
     dataList.innerHTML = uniqueNames.map(n => `<option value="${n}">`).join('');
@@ -56,19 +55,31 @@ function openModal(){
   setTimeout(()=>document.getElementById('f-name').focus(),50);
 }
 
-// ── FUNGSI BARU: AUTO PREDICT ESTIMASI DURASI ─────────────────
+// ── FUNGSI BARU: ADD TAG (GLOSARIUM) ──────────────────────────
+function addTag(tag) {
+  const inp = document.getElementById('f-name');
+  if (inp) {
+    // Kalau tag belum ada di input, tambahin di depan
+    if (!inp.value.includes(tag)) {
+      inp.value = tag + ' ' + inp.value;
+    }
+    inp.focus();
+    predictEstimate(inp.value); // Trigger AI peramal durasi
+  }
+}
+
+// ── FUNGSI AUTO PREDICT ESTIMASI DURASI ───────────────────────
 function predictEstimate(typedName) {
-  if (!typedName || typedName.length < 4) return; // Mulai menebak setelah 4 karakter
+  if (!typedName || typedName.length < 4) return;
   
   const query = typedName.toLowerCase();
   
-  // Gabungin task yg done dari history untuk dicari
   const allDoneTasks = [
     ...tasks.filter(t => t.done && t.actualStart && t.completedAt),
     ...archive.filter(t => t.actualStart && t.completedAt)
   ];
   
-  // Cari task yg namanya mirip dengan yg lagi lo ketik
+  // Cari yg namanya mengandung keyword yg diketik
   const similarTasks = allDoneTasks.filter(t => t.name.toLowerCase().includes(query));
   
   if (similarTasks.length > 0) {
@@ -80,7 +91,6 @@ function predictEstimate(typedName) {
     
     const avgDays = Math.round(totalDays / similarTasks.length);
     
-    // Auto-fill kolom estimasi secara magic!
     const estInput = document.getElementById('f-est-dur');
     if (estInput) {
       estInput.value = avgDays;
