@@ -110,6 +110,21 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="proj-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <h3>Tambah Project Baru</h3>
+    <div class="field"><label>Nama Project *</label><input id="p-name" placeholder="e.g. Q3 Hiring Review"></div>
+    <div class="grid2">
+      <div class="field"><label>Deadline (Estimasi)</label><input type="month" id="p-deadline"></div>
+      <div class="field"><label>Warna Dot Project</label><input type="color" id="p-color" value="#6C63D4" style="padding:0; height:32px; width:100%; cursor:pointer;"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn" onclick="document.getElementById('proj-modal').style.display='none'">Batal</button>
+      <button class="btn primary" onclick="saveProject()">Simpan Project</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="detail-modal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
   <div class="modal" style="width: 480px; max-width: 90vw;">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
