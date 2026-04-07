@@ -10,11 +10,12 @@ function nav(v){
   document.querySelectorAll('.ni[id^="nav-"]').forEach(el=>el.classList.remove('active'));
   const el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
   
-  // UPDATE: Mapping judul halaman baru
   document.getElementById('pg-title').textContent={dashboard:'Dashboard',tasks:'My Tasks',kanban:'Kanban Board',projects:'Projects',news:'HC News & Learning',kpi:'KPI & History'}[v]||v;
   render();
   if(v==='news'&&!newsItems.length&&!newsLoading)fetchNews();
-  if(v==='kpi'&&!archive.length)loadFromDB(); // Force tarik archive kalau kosong
+  if(v==='kpi'&&!archive.length) {
+    if(typeof loadFromDB==='function') loadFromDB();
+  }
 }
 
 function triggerBriefing(force=false){nav('dashboard');fetchBriefing(force);}
@@ -30,9 +31,19 @@ function openModal(){
   const estDur = document.getElementById('f-est-dur');
   if(estDur) estDur.value = '1';
 
+  // Populate Dropdown Project
   const sel=document.getElementById('f-proj');
   sel.innerHTML=projects.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
   
+  // UPDATE: Populate Datalist buat Smart Autocomplete nama Task
+  const dataList = document.getElementById('task-suggestions');
+  if(dataList) {
+    // Ambil semua nama task unik dari aktif maupun archive
+    const allNames = [...tasks, ...archive].map(t => t.name);
+    const uniqueNames = [...new Set(allNames)];
+    dataList.innerHTML = uniqueNames.map(n => `<option value="${n}">`).join('');
+  }
+
   const modalTitle = document.querySelector('#modal h3');
   if(modalTitle) modalTitle.textContent = 'Tambah Task Baru';
   const saveBtn = document.querySelector('#modal .btn.primary');
@@ -44,6 +55,39 @@ function openModal(){
   document.getElementById('modal').style.display='flex';
   setTimeout(()=>document.getElementById('f-name').focus(),50);
 }
+
+// ── FUNGSI BARU: AUTO PREDICT ESTIMASI DURASI ─────────────────
+function predictEstimate(typedName) {
+  if (!typedName || typedName.length < 4) return; // Mulai menebak setelah 4 karakter
+  
+  const query = typedName.toLowerCase();
+  
+  // Gabungin task yg done dari history untuk dicari
+  const allDoneTasks = [
+    ...tasks.filter(t => t.done && t.actualStart && t.completedAt),
+    ...archive.filter(t => t.actualStart && t.completedAt)
+  ];
+  
+  // Cari task yg namanya mirip dengan yg lagi lo ketik
+  const similarTasks = allDoneTasks.filter(t => t.name.toLowerCase().includes(query));
+  
+  if (similarTasks.length > 0) {
+    const totalDays = similarTasks.reduce((sum, t) => {
+      const start = new Date(t.actualStart);
+      const end = new Date(t.completedAt);
+      return sum + Math.max(1, Math.round((end - start) / 86400000));
+    }, 0);
+    
+    const avgDays = Math.round(totalDays / similarTasks.length);
+    
+    // Auto-fill kolom estimasi secara magic!
+    const estInput = document.getElementById('f-est-dur');
+    if (estInput) {
+      estInput.value = avgDays;
+    }
+  }
+}
+// ──────────────────────────────────────────────────────────────
 
 function closeModal(){document.getElementById('modal').style.display='none';}
 function closeModalOutside(e){if(e.target===document.getElementById('modal'))closeModal();}
