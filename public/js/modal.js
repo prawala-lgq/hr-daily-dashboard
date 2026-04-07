@@ -1,3 +1,8 @@
+// ============================================================
+// HRFlow — MODAL.JS
+// Task detail popup, edit KPI, dan delete confirm
+// ============================================================
+
 function openTaskDetail(id){
   const t=tasks.find(x=>String(x.id)===String(id));
   if(!t)return;
@@ -20,7 +25,6 @@ function openTaskDetail(id){
   
   if (t.actualStart) {
     if (t.done && t.completedAt) {
-      // Hitung durasi penyelesaian
       const start = new Date(t.actualStart);
       const end = new Date(t.completedAt);
       const diffDays = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
@@ -47,7 +51,7 @@ function openTaskDetail(id){
   overlay.className='task-modal-overlay';
   overlay.onclick=function(e){if(e.target===overlay)closeTaskPanel();};
   
-  // Ubah grid template jadi 3 kolom x 2 baris (6 kotak)
+  // Grid template jadi 3 kolom x 2 baris (6 kotak)
   overlay.innerHTML=`
   <div class="task-modal-panel">
     <div class="task-modal-header">
@@ -162,7 +166,105 @@ function openTaskDetail(id){
   document.body.appendChild(overlay);
 }
 
-// Update fungsi editTask biar nangkap field baru
+// === FUNGSI-FUNGSI PENDUKUNG YANG TADI KEHAPUS KITA BALIKIN ===
+function closeTaskPanel(){
+  document.getElementById('task-panel')?.remove();
+}
+
+function toggleTitleEdit(id){
+  const disp=document.getElementById('task-title-display');
+  const inp=document.getElementById('task-title-input');
+  if(!disp||!inp)return;
+  disp.style.display='none';
+  inp.style.display='block';
+  inp.focus();inp.select();
+}
+
+function cancelTitleEdit(){
+  const disp=document.getElementById('task-title-display');
+  const inp=document.getElementById('task-title-input');
+  if(disp)disp.style.display='block';
+  if(inp)inp.style.display='none';
+}
+
+async function saveTitleEdit(id,newName){
+  if(!newName.trim())return cancelTitleEdit();
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  t.name=newName.trim();
+  cancelTitleEdit();
+  const disp=document.getElementById('task-title-display');
+  if(disp)disp.textContent=t.name;
+  render();
+  await dbPost({action:'updateTask',task:t});
+}
+
+async function quickUpdateProgress(id,val){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  t.progress=parseInt(val);
+  if(t.progress===100)t.done=true;
+  const bar=document.getElementById('prog-bar-fill');
+  if(bar)bar.style.width=val+'%';
+  render();
+  await dbPost({action:'updateTask',task:t});
+}
+
+async function saveTaskDesc(id,desc){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  t.notes=desc;
+  await dbPost({action:'updateTask',task:t});
+}
+
+async function addLink(id,type){
+  const url=prompt(type==='jira'?'Masukkan URL Jira ticket:':type==='trello'?'Masukkan URL Trello card:':type==='gdrive'?'Masukkan URL Google Drive:':'Masukkan URL:');
+  if(!url||!url.trim())return;
+  const label=prompt('Label link (kosongkan untuk pakai URL):','')||url;
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  const links=t.links?JSON.parse(t.links):[];
+  links.push({url:url.trim(),label:label.trim(),type});
+  t.links=JSON.stringify(links);
+  openTaskDetail(id);
+  await dbPost({action:'updateTask',task:t});
+}
+
+async function removeLink(id,idx){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  const links=t.links?JSON.parse(t.links):[];
+  links.splice(idx,1);
+  t.links=JSON.stringify(links);
+  openTaskDetail(id);
+  await dbPost({action:'updateTask',task:t});
+}
+
+async function addActivity(id,text){
+  if(!text||!text.trim())return;
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  const activity=t.activity?JSON.parse(t.activity):[];
+  const now=new Date().toLocaleDateString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  activity.push({text:text.trim(),time:now});
+  t.activity=JSON.stringify(activity);
+  const inp=document.getElementById(`activity-input-${id}`);
+  if(inp)inp.value='';
+  openTaskDetail(id);
+  await dbPost({action:'updateTask',task:t});
+}
+
+async function deleteTaskConfirm(id){
+  const t=tasks.find(x=>String(x.id)===String(id));
+  if(!t)return;
+  if(!confirm('Hapus task "'+t.name+'"?'))return;
+  tasks=tasks.filter(x=>String(x.id)!==String(id));
+  document.getElementById('task-panel')?.remove();
+  updateBadge();render();
+  await dbPost({action:'deleteTask',id});
+}
+
+// FUNGSI UPDATE EDIT YANG BARU BUAT KPI
 async function editTask(id){
   const t=tasks.find(x=>String(x.id)===String(id));
   if(!t)return;
