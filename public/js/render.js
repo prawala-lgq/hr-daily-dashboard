@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — RENDER.JS
-// Render semua views + AI Tools
+// Render semua views + AI Tools + KPI Dashboard
 // ============================================================
 
 function render(){
@@ -97,6 +97,7 @@ function render(){
       ${renderFilterBar()}
       ${sorted.length>0?sorted.map(taskRow).join(''):`<div style="padding:32px;text-align:center;color:var(--tx3);font-size:13px">Tidak ada task yang sesuai filter</div>`}
     </div>`;
+    
   } else if(view==='kanban'){
   document.getElementById('pg-title').textContent='Kanban Board';
   const colDefs=[
@@ -138,8 +139,10 @@ function render(){
       </div>
     </div>`).join('')}
   </div>`;
+  
 } else if(view==='projects'){
     c.innerHTML=`<div class="panel"><div class="ph"><span class="ph-title">Projects aktif (${projects.length})</span><button class="btn primary" onclick="openProjModal()" style="font-size:11px;padding:4px 12px">+ Project baru</button></div>${projects.map(p=>{const total=Number(p.totalTasks||p.tasks||0);const doneN=Number(p.doneTasks||p.done||0);const pct=total>0?Math.round(doneN/total*100):0;return`<div class="proj-item" style="padding:13px 16px"><div class="pdot" style="background:${p.color};width:10px;height:10px"></div><div class="proj-info"><div class="proj-name">${p.name}</div><div class="proj-meta">${doneN} dari ${total} task selesai · Deadline: ${p.deadline||'—'}</div><div class="proj-bar" style="height:5px;margin-top:7px"><div class="proj-bar-fill" style="background:${p.color};width:${pct}%"></div></div></div><div class="proj-pct" style="font-size:14px">${pct}%</div></div>`;}).join('')}</div>`;
+    
 } else if(view==='news'){
     c.innerHTML=`
     <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
@@ -155,6 +158,144 @@ function render(){
       ${newsLoading?`<div style="padding:24px;text-align:center;color:var(--tx3);font-size:12px" class="loading-pulse">Gemini sedang mengkurasi berita...</div>`:newsItems.map((n, i)=>`<div class="news-item" onclick="openNewsDetail(${i})"><span class="ncat" style="${catStyle[n.category]||''}">${n.category}</span><div class="ntitle">${n.title}</div><div class="nsumm">${n.summary||''}</div><div class="nmeta">${n.source} · ${n.timeAgo}</div></div>`).join('')}
     </div>`;
 if(!newsItems.length&&!newsLoading)fetchNews();
+
+// ── HALAMAN BARU: KPI & HISTORY ───────────────────────────────────────
+  } else if(view==='kpi') {
+    document.getElementById('pg-sub').textContent = 'Executive Dashboard & Task Tracking';
+    
+    // Gabungin task yg done di dashboard sama task yg udah di archive
+    const allDoneTasks = [
+      ...tasks.filter(t => t.done && t.actualStart && t.completedAt),
+      ...archive.filter(t => t.actualStart && t.completedAt)
+    ];
+
+    const now = new Date();
+    const currYear = now.getFullYear();
+    const currMonth = now.getMonth();
+    
+    let filteredTasks = allDoneTasks;
+    let filterLabel = "Semua Waktu";
+
+    // Logic Filtering Waktu
+    if(kpiFilter === 'this_month') {
+      filteredTasks = allDoneTasks.filter(t => new Date(t.completedAt).getMonth() === currMonth && new Date(t.completedAt).getFullYear() === currYear);
+      filterLabel = "Bulan Ini";
+    } else if(kpiFilter === 'last_month') {
+      let lastMonth = currMonth - 1;
+      let year = currYear;
+      if(lastMonth < 0) { lastMonth = 11; year--; }
+      filteredTasks = allDoneTasks.filter(t => new Date(t.completedAt).getMonth() === lastMonth && new Date(t.completedAt).getFullYear() === year);
+      filterLabel = "Bulan Lalu";
+    } else if(kpiFilter.startsWith('q')) {
+      const q = parseInt(kpiFilter.substring(1));
+      filteredTasks = allDoneTasks.filter(t => {
+        const d = new Date(t.completedAt);
+        const taskQ = Math.floor(d.getMonth()/3) + 1;
+        return taskQ === q && d.getFullYear() === currYear;
+      });
+      filterLabel = `Q${q} ${currYear}`;
+    }
+
+    // Kalkulasi Metrik Utama
+    const totalDone = filteredTasks.length;
+    let avgCycleTime = 0;
+    let onTimeCount = 0;
+    
+    if(totalDone > 0) {
+      const totalDays = filteredTasks.reduce((sum, t) => {
+        const start = new Date(t.actualStart);
+        const end = new Date(t.completedAt);
+        return sum + Math.max(1, Math.round((end - start) / 86400000));
+      }, 0);
+      avgCycleTime = (totalDays / totalDone).toFixed(1);
+      
+      onTimeCount = filteredTasks.filter(t => {
+        if(!t.due) return true;
+        return new Date(t.completedAt) <= new Date(t.due);
+      }).length;
+    }
+    const onTimeRate = totalDone > 0 ? Math.round((onTimeCount / totalDone) * 100) : 0;
+
+    // Breakdown per project
+    const projBreakdown = {};
+    filteredTasks.forEach(t => { projBreakdown[t.project] = (projBreakdown[t.project] || 0) + 1; });
+    const projBars = Object.keys(projBreakdown).sort((a,b)=>projBreakdown[b]-projBreakdown[a]).map(pName => {
+       const cnt = projBreakdown[pName];
+       const pct = Math.round((cnt / totalDone) * 100);
+       const pColor = pBg[pName] ? pTx[pName] : 'var(--acc)';
+       return `<div style="margin-bottom:12px">
+         <div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px;color:var(--tx1)"><span>${pName}</span><span style="font-weight:600">${cnt} task (${pct}%)</span></div>
+         <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden"><div style="height:100%;background:${pColor};width:${pct}%;border-radius:3px"></div></div>
+       </div>`;
+    }).join('');
+
+    // Tabel Log History
+    const tableRows = filteredTasks.sort((a,b)=>new Date(b.completedAt)-new Date(a.completedAt)).map(t => {
+      const start = new Date(t.actualStart);
+      const end = new Date(t.completedAt);
+      const days = Math.max(1, Math.round((end - start) / 86400000));
+      const est = parseInt(t.estDuration) || 0;
+      let speedBadge = `<span style="color:var(--grn)">${days} hari</span>`;
+      if (est > 0 && days > est) speedBadge = `<span style="color:var(--red-tx)">${days} hari (Over)</span>`;
+      
+      return `
+      <tr style="border-bottom:1px solid var(--bd); transition: background .1s;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background='transparent'">
+        <td style="padding:10px 14px;font-size:12.5px;color:var(--tx1);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${t.name}">${t.name}</td>
+        <td style="padding:10px 14px"><span class="ptag" style="background:${pBg[t.project]||'var(--bg2)'};color:${pTx[t.project]||'var(--tx2)'}">${t.project}</span></td>
+        <td style="padding:10px 14px;font-size:11.5px;color:var(--tx2)">${new Date(t.completedAt).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})}</td>
+        <td style="padding:10px 14px;font-size:11.5px;font-weight:500;">${speedBadge}</td>
+      </tr>`;
+    }).join('');
+
+    // Inject HTML buat halaman KPI
+    c.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+      <h2 style="font-size:15px;font-weight:600;color:var(--tx1)">Executive Summary</h2>
+      <select onchange="kpiFilter=this.value;render()" style="padding:6px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--bg1);font-size:12px;color:var(--tx1);outline:none;cursor:pointer;font-family:inherit;">
+        <option value="this_month" ${kpiFilter==='this_month'?'selected':''}>Bulan Ini</option>
+        <option value="last_month" ${kpiFilter==='last_month'?'selected':''}>Bulan Lalu</option>
+        <option value="q1" ${kpiFilter==='q1'?'selected':''}>Q1 (Jan-Mar)</option>
+        <option value="q2" ${kpiFilter==='q2'?'selected':''}>Q2 (Apr-Jun)</option>
+        <option value="q3" ${kpiFilter==='q3'?'selected':''}>Q3 (Jul-Sep)</option>
+        <option value="q4" ${kpiFilter==='q4'?'selected':''}>Q4 (Oct-Des)</option>
+        <option value="all" ${kpiFilter==='all'?'selected':''}>Semua Waktu</option>
+      </select>
+    </div>
+
+    <div class="stats" style="grid-template-columns:repeat(3, 1fr);">
+      <div class="stat"><div class="stat-lbl">Total Selesai</div><div class="stat-val" style="color:var(--acc)">${totalDone}</div><div class="stat-note" style="color:var(--tx2)">Task dikerjakan di ${filterLabel}</div></div>
+      <div class="stat"><div class="stat-lbl">Average Speed</div><div class="stat-val" style="color:var(--blu-tx)">${avgCycleTime}</div><div class="stat-note" style="color:var(--tx2)">Hari/task (Cycle time)</div></div>
+      <div class="stat"><div class="stat-lbl">On-Time Rate</div><div class="stat-val" style="color:${onTimeRate>=80?'var(--grn)':'var(--ylw-tx)'}">${onTimeRate}%</div><div class="stat-note" style="color:var(--tx2)">Selesai sebelum due date</div></div>
+    </div>
+
+    <div class="panels" style="grid-template-columns: 320px 1fr; gap:16px;">
+      <div class="panel" style="align-self:start;">
+        <div class="ph"><span class="ph-title">Distribusi Project</span></div>
+        <div style="padding:16px;">
+          ${projBars || '<div style="font-size:12px;color:var(--tx3);text-align:center;padding:20px;">Tidak ada data</div>'}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="ph"><span class="ph-title">Task Log & History</span></div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; text-align:left;">
+            <thead>
+              <tr style="background:var(--bg2);border-bottom:1px solid var(--bd);">
+                <th style="padding:10px 14px;font-size:10.5px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.05em">Nama Task</th>
+                <th style="padding:10px 14px;font-size:10.5px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.05em">Project</th>
+                <th style="padding:10px 14px;font-size:10.5px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.05em">Selesai Pada</th>
+                <th style="padding:10px 14px;font-size:10.5px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:0.05em">Durasi</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows || `<tr><td colspan="4" style="padding:32px;text-align:center;color:var(--tx3);font-size:12px">Tidak ada task yang diselesaikan pada periode ini.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    `;
   }
 }
 
@@ -176,7 +317,6 @@ function openNewsDetail(index) {
       <a href="${searchUrl}" target="_blank" class="btn primary" style="text-decoration:none;">Cari Artikel ↗</a>
     `;
   }
-  
   document.getElementById('detail-modal').style.display = 'flex';
 }
 
