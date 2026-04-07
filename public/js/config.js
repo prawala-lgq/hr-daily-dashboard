@@ -6,6 +6,8 @@
 // STATE
 let dark=false,view='dashboard',briefText='',briefLoading=false,newsItems=[],newsLoading=false;
 let searchQuery='',filterProject='',filterPrio='',filterStatus='all';
+let kpiFilter='this_month'; // State baru untuk filter KPI waktu
+
 const today=new Date();
 const todayISO=today.toISOString().split('T')[0];
 const todayFmt=today.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -26,9 +28,10 @@ const catStyle={'HC':'background:var(--acc-bg);color:var(--acc-tx)','Gen-AI':'ba
 
 // ── GANTI dengan URL Google Apps Script kamu setelah deploy ──
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwFrlKUVAPQfXCqdrA0RAr6IImrQzKhUBzJQ3TIRjXScLK6_lvRZxVa6xH6owf_i8mKcw/exec';
-const HAS_DB  = GAS_URL !== 'MASUKKAN_APPS_SCRIPT_URL_DISINI';
+const HAS_DB  = true; // Langsung di-set true karena URL-nya udah valid
 
 let tasks=[];
+let archive=[]; // State baru untuk nampung data dari tab Archive
 let projects=[
   {name:'Recruitment 2024',color:'#6C63D4',tasks:12,done:7,deadline:'Apr 2026'},
   {name:'Onboarding Flow',color:'#1a9e72',tasks:8,done:5,deadline:'Mar 2026'},
@@ -44,3 +47,8 @@ const DEFAULT_TASKS=[
   {id:'t5',name:'Kirim offer letter — Anisa S.',project:'Recruitment 2024',due:'2026-03-15',prio:'med',progress:90,done:false,notes:''},
   {id:'t6',name:'Setup Google Meet orientasi karyawan baru',project:'Onboarding Flow',due:'2026-03-18',prio:'low',progress:10,done:false,notes:''},
 ];
+
+// Helper Waktu (Supaya fungsi isOverdue/isToday dikenali di file lain)
+const isOverdue = (d) => d && new Date(d) < new Date(todayISO);
+const isToday = (d) => d === todayISO;
+const fmtDue = (d) => d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : 'No due';
