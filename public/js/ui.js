@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — UI.JS
-// UI — dark mode, nav, modal, saveTask, toggleTask, dll
+// UI — dark mode, nav, modal, saveTask, toggleTask, notifications, add project
 // ============================================================
 
 function toggleDark(){dark=!dark;document.getElementById('app').classList.toggle('dark',dark);document.getElementById('theme-btn').textContent=dark?'☀️':'🌙'}
@@ -22,17 +22,14 @@ function openModal(){
   document.getElementById('f-notes').value='';
   document.getElementById('f-prio').value='med';
   
-  // Reset field KPI baru
   const tgtStart = document.getElementById('f-tgt-start');
   if(tgtStart) tgtStart.value = todayISO;
   const estDur = document.getElementById('f-est-dur');
   if(estDur) estDur.value = '1';
 
-  // Populate project dropdown dari data terkini
   const sel=document.getElementById('f-proj');
   sel.innerHTML=projects.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
   
-  // Ubah judul modal balik ke Tambah (buat nge-reset setelah dipakai edit)
   const modalTitle = document.querySelector('#modal h3');
   if(modalTitle) modalTitle.textContent = 'Tambah Task Baru';
   const saveBtn = document.querySelector('#modal .btn.primary');
@@ -51,7 +48,6 @@ function closeModalOutside(e){if(e.target===document.getElementById('modal'))clo
 async function saveTask(){
   const name=document.getElementById('f-name').value.trim();if(!name)return;
   
-  // Tangkap value KPI baru
   const tgtStartInput = document.getElementById('f-tgt-start');
   const estDurInput = document.getElementById('f-est-dur');
   
@@ -72,10 +68,10 @@ async function saveTask(){
   
   tasks.unshift(task);
   closeModal();updateBadge();render();
-  showDBStatus('Menyimpan task...');
+  if (typeof showDBStatus === 'function') showDBStatus('Menyimpan task...');
   const res=await dbPost({action:'addTask',task});
   if(res&&res.id){task.id=res.id;}
-  hideDBStatus();
+  if (typeof hideDBStatus === 'function') hideDBStatus();
 }
 
 async function toggleTask(id){
@@ -83,7 +79,6 @@ async function toggleTask(id){
   if(!t)return;
   t.done=!t.done;if(t.done)t.progress=100;
   updateBadge();render();
-  // Refresh panel if open
   if(document.getElementById('task-panel')) openTaskDetail(id);
   await dbPost({action:'updateTask',task:t});
 }
@@ -94,7 +89,6 @@ function checkDueNotifications(){
   const dueToday = tasks.filter(t=>!t.done&&isToday(t.due));
 
   if(overdue.length===0&&dueToday.length===0) return;
-  // Don't show if already dismissed today
   const dismissKey = 'hrflow_notif_dismissed';
   const dismissed = localStorage.getItem(dismissKey);
   if(dismissed===new Date().toISOString().split('T')[0]) return;
@@ -115,7 +109,7 @@ function checkDueNotifications(){
   if(dueToday.length>0) msg += `<strong>${dueToday.length} task due hari ini</strong>`;
 
   const taskNames = [...overdue,...dueToday].slice(0,3).map(t=>
-    `<span style="cursor:pointer;text-decoration:underline" onclick="openTaskDetail(${JSON.stringify(t.id)})">${t.name}</span>`
+    `<span style="cursor:pointer;text-decoration:underline" onclick='openTaskDetail(${JSON.stringify(t.id)})'>${t.name}</span>`
   ).join(', ');
 
   el.style.cssText=`position:fixed;top:0;left:0;right:0;z-index:200;background:${bg};border-bottom:1px solid ${bd};padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:${tx}`;
@@ -130,7 +124,6 @@ function checkDueNotifications(){
     </div>`;
   document.body.prepend(el);
 
-  // Offset topbar
   const topbar=document.querySelector('.topbar');
   if(topbar) topbar.style.marginTop='43px';
 }
@@ -198,4 +191,37 @@ function renderFilterBar(){
     ${activeFilters.length>0?`<button onclick="clearFilters()" style="padding:5px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--red-bg);color:var(--red-tx);font-size:11px;cursor:pointer;font-family:inherit">✕ Reset filter</button>`:''}
     <span style="font-size:11px;color:var(--tx3);margin-left:auto">${getFilteredTasks().length} dari ${tasks.length} task</span>
   </div>`;
+}
+
+// ── PROJECT MODAL LOGIC ───────────────────────────────────────
+function openProjModal() {
+  document.getElementById('p-name').value = '';
+  document.getElementById('p-deadline').value = '';
+  document.getElementById('p-color').value = '#6C63D4';
+  document.getElementById('proj-modal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('p-name').focus(),50);
+}
+
+async function saveProject() {
+  const name = document.getElementById('p-name').value.trim();
+  if (!name) return;
+  
+  const color = document.getElementById('p-color').value;
+  const deadlineVal = document.getElementById('p-deadline').value;
+  
+  let deadline = deadlineVal;
+  if (deadlineVal) {
+    const d = new Date(deadlineVal + '-01');
+    deadline = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  const proj = { id: 'proj_' + Date.now(), name, color, totalTasks: 0, doneTasks: 0, deadline };
+  
+  projects.push(proj);
+  document.getElementById('proj-modal').style.display = 'none';
+  render();
+  
+  if (typeof showDBStatus === 'function') showDBStatus('Menyimpan project...');
+  await dbPost({action: 'addProject', project: proj});
+  if (typeof hideDBStatus === 'function') hideDBStatus();
 }
