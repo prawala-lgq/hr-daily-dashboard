@@ -51,7 +51,7 @@ function openTaskDetail(id){
   overlay.className='task-modal-overlay';
   overlay.onclick=function(e){if(e.target===overlay)closeTaskPanel();};
   
-  // Grid template jadi 3 kolom x 2 baris (6 kotak)
+  // Gunakan kutip tunggal untuk onclick yg menerima variabel string JSON
   overlay.innerHTML=`
   <div class="task-modal-panel">
     <div class="task-modal-header">
@@ -65,11 +65,11 @@ function openTaskDetail(id){
     <div class="task-modal-body">
       <div style="margin-bottom:16px">
         <div id="task-title-display" style="font-size:18px;font-weight:600;color:var(--tx1);line-height:1.35;cursor:pointer;padding:6px 8px;border-radius:8px;margin:-6px -8px" 
-          onclick="toggleTitleEdit(${tid})" title="Klik untuk edit">${t.name}</div>
+          onclick='toggleTitleEdit(${tid})' title="Klik untuk edit">${t.name}</div>
         <input id="task-title-input" type="text" value="${t.name.replace(/"/g,'&quot;')}" 
           style="display:none;width:100%;font-size:18px;font-weight:600;padding:6px 8px;border-radius:8px;border:2px solid var(--acc);background:var(--bg2);color:var(--tx1);font-family:inherit;outline:none"
-          onblur="saveTitleEdit(${tid},this.value)"
-          onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape')cancelTitleEdit()">
+          onblur='saveTitleEdit(${tid},this.value)'
+          onkeydown='if(event.key==="Enter")this.blur();if(event.key==="Escape")cancelTitleEdit()'>
       </div>
 
       <div style="margin-bottom:18px">
@@ -79,7 +79,7 @@ function openTaskDetail(id){
         </div>
         <input type="range" min="0" max="100" value="${t.progress}" step="5"
           style="width:100%;accent-color:var(--grn)"
-          onchange="quickUpdateProgress(${tid},this.value)"
+          onchange='quickUpdateProgress(${tid},this.value)'
           oninput="this.nextElementSibling.textContent=this.value+'%'">
         <span style="display:none"></span>
         <div style="height:6px;background:var(--bg3);border-radius:4px;margin-top:5px;overflow:hidden">
@@ -118,7 +118,7 @@ function openTaskDetail(id){
       <div class="task-section">
         <div class="task-section-title">📝 Deskripsi & Catatan</div>
         <textarea class="desc-area" id="task-desc-${t.id}" placeholder="Tambahkan deskripsi, catatan, atau konteks task ini..."
-          onblur="saveTaskDesc(${tid},this.value)">${t.notes||''}</textarea>
+          onblur='saveTaskDesc(${tid},this.value)'>${t.notes||''}</textarea>
         <div style="font-size:10.5px;color:var(--tx3);margin-top:4px">Klik di luar untuk simpan otomatis</div>
       </div>
 
@@ -127,14 +127,14 @@ function openTaskDetail(id){
         <div id="links-list-${t.id}">
           ${links.map((l,i)=>`<a class="link-chip" href="${l.url}" target="_blank" title="${l.url}">
             ${l.type==='jira'?'🔵':l.type==='trello'?'🟦':l.type==='gdrive'?'📄':'🔗'} ${l.label||l.url}
-            <span onclick="event.preventDefault();removeLink(${tid},${i})" style="margin-left:4px;color:var(--tx3);font-size:10px">×</span>
+            <span onclick='event.preventDefault();removeLink(${tid},${i})' style="margin-left:4px;color:var(--tx3);font-size:10px">×</span>
           </a>`).join('')}
         </div>
         <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
-          <button onclick="addLink(${tid},'jira')" class="btn" style="font-size:11px;padding:4px 8px">🔵 + Jira</button>
-          <button onclick="addLink(${tid},'trello')" class="btn" style="font-size:11px;padding:4px 8px">🟦 + Trello</button>
-          <button onclick="addLink(${tid},'gdrive')" class="btn" style="font-size:11px;padding:4px 8px">📄 + Drive</button>
-          <button onclick="addLink(${tid},'other')" class="btn" style="font-size:11px;padding:4px 8px">🔗 + Link lain</button>
+          <button onclick='addLink(${tid},"jira")' class="btn" style="font-size:11px;padding:4px 8px">🔵 + Jira</button>
+          <button onclick='addLink(${tid},"trello")' class="btn" style="font-size:11px;padding:4px 8px">🟦 + Trello</button>
+          <button onclick='addLink(${tid},"gdrive")' class="btn" style="font-size:11px;padding:4px 8px">📄 + Drive</button>
+          <button onclick='addLink(${tid},"other")' class="btn" style="font-size:11px;padding:4px 8px">🔗 + Link lain</button>
         </div>
       </div>
 
@@ -149,24 +149,24 @@ function openTaskDetail(id){
         <div style="display:flex;gap:6px;margin-top:10px">
           <input id="activity-input-${t.id}" type="text" placeholder="Tambah catatan activity..." 
             style="flex:1;padding:6px 10px;border-radius:7px;border:1px solid var(--bd);background:var(--bg2);font-size:12px;color:var(--tx1);font-family:inherit;outline:none"
-            onkeydown="if(event.key==='Enter')addActivity(${tid},this.value)">
-          <button onclick="addActivity(${tid},document.getElementById('activity-input-${t.id}').value)" class="btn primary" style="font-size:11px;padding:5px 10px">+ Add</button>
+            onkeydown='if(event.key==="Enter")addActivity(${tid},this.value)'>
+          <button onclick='addActivity(${tid},document.getElementById("activity-input-${t.id}").value)' class="btn primary" style="font-size:11px;padding:5px 10px">+ Add</button>
         </div>
       </div>
     </div>
 
     <div class="task-modal-footer">
-      <button onclick="toggleTask(${tid})" class="btn ${t.done?'':'primary'}" style="font-size:12px;flex:1">
+      <button onclick='toggleTask(${tid})' class="btn ${t.done?'':'primary'}" style="font-size:12px;flex:1">
         ${t.done?'↩ Tandai belum selesai':'✓ Tandai selesai'}
       </button>
-      <button onclick="closeTaskPanel();editTask(${tid})" class="btn" style="font-size:12px">✏️ Edit</button>
-      <button onclick="deleteTaskConfirm(${tid})" class="btn" style="font-size:12px;color:var(--red-tx);border-color:var(--red-bg)">🗑</button>
+      <button onclick='closeTaskPanel();editTask(${tid})' class="btn" style="font-size:12px">✏️ Edit</button>
+      <button onclick='deleteTaskConfirm(${tid})' class="btn" style="font-size:12px;color:var(--red-tx);border-color:var(--red-bg)">🗑</button>
     </div>
   </div>`;
   document.body.appendChild(overlay);
 }
 
-// === FUNGSI-FUNGSI PENDUKUNG YANG TADI KEHAPUS KITA BALIKIN ===
+// === FUNGSI-FUNGSI PENDUKUNG ===
 function closeTaskPanel(){
   document.getElementById('task-panel')?.remove();
 }
@@ -276,7 +276,7 @@ async function editTask(id){
   
   // Set value KPI
   const tgtStart = document.getElementById('f-tgt-start');
-  if(tgtStart) tgtStart.value = t.targetStart || '';
+  if(tgtStart) tgtStart.value = t.targetStart ? t.targetStart.split('T')[0] : '';
   const estDur = document.getElementById('f-est-dur');
   if(estDur) estDur.value = t.estDuration || '';
 
