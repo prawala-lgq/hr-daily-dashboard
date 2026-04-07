@@ -9,9 +9,12 @@ function nav(v){
   view=v;
   document.querySelectorAll('.ni[id^="nav-"]').forEach(el=>el.classList.remove('active'));
   const el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
-  document.getElementById('pg-title').textContent={dashboard:'Dashboard',tasks:'My Tasks',kanban:'Kanban Board',projects:'Projects',news:'HC News & Learning'}[v]||v;
+  
+  // UPDATE: Mapping judul halaman baru
+  document.getElementById('pg-title').textContent={dashboard:'Dashboard',tasks:'My Tasks',kanban:'Kanban Board',projects:'Projects',news:'HC News & Learning',kpi:'KPI & History'}[v]||v;
   render();
   if(v==='news'&&!newsItems.length&&!newsLoading)fetchNews();
+  if(v==='kpi'&&!archive.length)loadFromDB(); // Force tarik archive kalau kosong
 }
 
 function triggerBriefing(force=false){nav('dashboard');fetchBriefing(force);}
