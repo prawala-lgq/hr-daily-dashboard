@@ -1,57 +1,77 @@
 // ============================================================
 // HRFlow — DB.JS
-// Database — Google Apps Script, loadFromDB, helpers
+// Fetch API ke Google Apps Script
 // ============================================================
 
-async function dbGet(action){
-  if(!HAS_DB)return null;
-  try{const r=await fetch(GAS_URL+'?action='+action);return await r.json();}catch(e){return null;}
+async function dbGet(action) {
+  try {
+    const res = await fetch(`${GAS_URL}?action=${action}`);
+    return await res.json();
+  } catch (e) { console.error('GET Error:', e); return null; }
 }
-async function dbPost(body){
-  if(!HAS_DB)return null;
-  try{const r=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(body)});return await r.json();}catch(e){return null;}
+
+async function dbPost(body) {
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    return await res.json();
+  } catch (e) { console.error('POST Error:', e); return null; }
 }
-async function loadFromDB(){
-  if(!HAS_DB){tasks=[...DEFAULT_TASKS];updateBadge();render();return;}
-  showDBStatus('Memuat data...');
-  // Load tasks dan projects selalu fresh dari Sheets
-  const [res, pres] = await Promise.all([dbGet('getTasks'), dbGet('getProjects')]);
-  if(res&&res.tasks&&res.tasks.length>0){tasks=res.tasks;}else{tasks=[...DEFAULT_TASKS];}
-  if(pres&&pres.projects&&pres.projects.length>0){
-    projects=pres.projects;
-    rebuildProjectMaps();
-    renderSidebarProjects();
+
+function showDBStatus(msg) {
+  let el = document.getElementById('db-status');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'db-status';
+    el.style.cssText = 'position:fixed;bottom:15px;right:20px;background:var(--bg1);border:1px solid var(--bd);padding:8px 14px;border-radius:8px;font-size:11.5px;color:var(--tx2);box-shadow:0 4px 12px rgba(0,0,0,0.08);z-index:9999;display:flex;align-items:center;gap:8px';
+    document.body.appendChild(el);
   }
-  hideDBStatus();updateBadge();render();
-  checkDueNotifications();
+  el.innerHTML = `<span class="loading-pulse" style="width:8px;height:8px;background:var(--acc);border-radius:50%;display:inline-block"></span>${msg}`;
+  el.style.display = 'flex';
 }
 
-function renderSidebarProjects(){
-  const container=document.getElementById('sidebar-projects');
-  if(!container)return;
-  const pColors2=['#6C63D4','#1a9e72','#c85428','#2e7dd6','#b07010','#7F77DD','#D4547A','#0F9D9D'];
-  container.innerHTML=projects.map((p,i)=>{
-    const color=p.color||pColors2[i%pColors2.length];
-    return`<div class="ni" onclick="nav('projects')"><div class="pdot" style="background:${color}"></div>${p.name}</div>`;
-  }).join('');
+function hideDBStatus() {
+  const el = document.getElementById('db-status');
+  if (el) el.style.display = 'none';
 }
-function showDBStatus(msg){
-  let el=document.getElementById('db-status');
-  if(!el){el=document.createElement('div');el.id='db-status';el.style.cssText='position:fixed;bottom:16px;right:16px;background:var(--tx1);color:var(--bg1);padding:8px 14px;border-radius:8px;font-size:12px;z-index:999';document.body.appendChild(el);}
-  el.textContent=msg;el.style.display='block';
-}
-function hideDBStatus(){const el=document.getElementById('db-status');if(el)el.style.display='none';}
 
-function isToday(d){if(!d)return false;const a=new Date(d),b=new Date();a.setHours(0,0,0,0);b.setHours(0,0,0,0);return a.getTime()===b.getTime()}
-function isOverdue(d){if(!d)return false;const a=new Date(d),b=new Date();a.setHours(0,0,0,0);b.setHours(0,0,0,0);return a<b}
-function fmtDue(d){
-  if(!d)return'—';const dt=new Date(d),t=new Date();dt.setHours(0,0,0,0);t.setHours(0,0,0,0);
-  const diff=Math.round((dt-t)/86400000);
-  if(diff<0)return'<span style="color:var(--red-tx);font-weight:500">Overdue</span>';
-  if(diff===0)return'<span style="color:var(--red-tx);font-weight:500">Hari ini</span>';
-  if(diff===1)return'<span style="color:var(--ylw-tx)">Besok</span>';
-  return dt.toLocaleDateString('id-ID',{day:'numeric',month:'short'});
-}
-function updateBadge(){document.getElementById('open-cnt').textContent=tasks.filter(t=>!t.done).length}
+async function loadFromDB() {
+  showDBStatus('Memuat data dari Google Sheets...');
+  
+  // UPDATE: Memanggil 3 API sekaligus (Tasks, Projects, Archive)
+  const [tRes, pRes, aRes] = await Promise.all([
+    dbGet('getTasks'),
+    dbGet('getProjects'),
+    dbGet('getArchive')
+  ]);
+  
+  hideDBStatus();
 
-// 1. UPDATE: Panggil API Netlify dengan penanganan Error yang lebih baik
+  if (tRes && tRes.tasks) tasks = tRes.tasks;
+  if (pRes && pRes.projects) projects = pRes.projects;
+  if (aRes && aRes.archive) archive = aRes.archive;
+
+  if (typeof rebuildProjectMaps === 'function') rebuildProjectMaps(); // Rebuild mapping warna
+  renderSidebarProjects();
+  if (typeof checkDueNotifications === 'function') checkDueNotifications();
+  render();
+}
+
+function renderSidebarProjects() {
+  const sp = document.getElementById('sidebar-projects');
+  if (!sp) return;
+  sp.innerHTML = projects.map(p => `
+    <div class="ni" style="cursor:default">
+      <div class="pdot" style="background:${p.color}"></div>
+      <span style="font-size:11.5px;color:var(--tx2)">${p.name}</span>
+    </div>
+  `).join('');
+}
+
+function updateBadge() {
+  const cnt = tasks.filter(t => !t.done).length;
+  const el = document.getElementById('open-cnt');
+  if (el) el.textContent = cnt;
+}
