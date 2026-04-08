@@ -10,11 +10,24 @@ function nav(v){
   document.querySelectorAll('.ni[id^="nav-"]').forEach(el=>el.classList.remove('active'));
   const el=document.getElementById('nav-'+v);if(el)el.classList.add('active');
   
-  document.getElementById('pg-title').textContent={dashboard:'Dashboard',tasks:'My Tasks',kanban:'Kanban Board',projects:'Projects',news:'HC News & Learning',kpi:'KPI & History'}[v]||v;
+  // UPDATE MAPPING TITLE: Nambahin glosarium
+  document.getElementById('pg-title').textContent={dashboard:'Dashboard',tasks:'My Tasks',kanban:'Kanban Board',projects:'Projects',news:'HC News & Learning',kpi:'KPI & History',glosarium:'Glosarium & Taxonomy'}[v]||v;
   render();
   if(v==='news'&&!newsItems.length&&!newsLoading)fetchNews();
   if(v==='kpi'&&!archive.length) {
     if(typeof loadFromDB==='function') loadFromDB();
+  }
+}
+
+function filterByTag(tag) {
+  searchQuery = tag;
+  const topbarSearch = document.getElementById('topbar-search');
+  if (topbarSearch) topbarSearch.value = tag;
+  
+  if (view !== 'tasks') {
+    nav('tasks');
+  } else {
+    render();
   }
 }
 
@@ -31,11 +44,9 @@ function openModal(){
   const estDur = document.getElementById('f-est-dur');
   if(estDur) estDur.value = '1';
 
-  // Populate Dropdown Project
   const sel=document.getElementById('f-proj');
   sel.innerHTML=projects.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
   
-  // Populate Datalist buat Smart Autocomplete nama Task
   const dataList = document.getElementById('task-suggestions');
   if(dataList) {
     const allNames = [...tasks, ...archive].map(t => t.name);
@@ -55,56 +66,42 @@ function openModal(){
   setTimeout(()=>document.getElementById('f-name').focus(),50);
 }
 
-// ── FUNGSI BARU: ADD TAG (GLOSARIUM) ──────────────────────────
 function addTag(tag) {
   const inp = document.getElementById('f-name');
   if (inp) {
-    // Kalau tag belum ada di input, tambahin di depan
     if (!inp.value.includes(tag)) {
       inp.value = tag + ' ' + inp.value;
     }
     inp.focus();
-    predictEstimate(inp.value); // Trigger AI peramal durasi
+    predictEstimate(inp.value);
   }
 }
 
-// ── FUNGSI AUTO PREDICT ESTIMASI DURASI ───────────────────────
 function predictEstimate(typedName) {
   if (!typedName || typedName.length < 4) return;
-  
   const query = typedName.toLowerCase();
-  
   const allDoneTasks = [
     ...tasks.filter(t => t.done && t.actualStart && t.completedAt),
     ...archive.filter(t => t.actualStart && t.completedAt)
   ];
-  
-  // Cari yg namanya mengandung keyword yg diketik
   const similarTasks = allDoneTasks.filter(t => t.name.toLowerCase().includes(query));
-  
   if (similarTasks.length > 0) {
     const totalDays = similarTasks.reduce((sum, t) => {
       const start = new Date(t.actualStart);
       const end = new Date(t.completedAt);
       return sum + Math.max(1, Math.round((end - start) / 86400000));
     }, 0);
-    
     const avgDays = Math.round(totalDays / similarTasks.length);
-    
     const estInput = document.getElementById('f-est-dur');
-    if (estInput) {
-      estInput.value = avgDays;
-    }
+    if (estInput) { estInput.value = avgDays; }
   }
 }
-// ──────────────────────────────────────────────────────────────
 
 function closeModal(){document.getElementById('modal').style.display='none';}
 function closeModalOutside(e){if(e.target===document.getElementById('modal'))closeModal();}
 
 async function saveTask(){
   const name=document.getElementById('f-name').value.trim();if(!name)return;
-  
   const tgtStartInput = document.getElementById('f-tgt-start');
   const estDurInput = document.getElementById('f-est-dur');
   
@@ -140,11 +137,9 @@ async function toggleTask(id){
   await dbPost({action:'updateTask',task:t});
 }
 
-// ── NOTIFIKASI DUE DATE ───────────────────────────────────────
 function checkDueNotifications(){
   const overdue = tasks.filter(t=>!t.done&&isOverdue(t.due));
   const dueToday = tasks.filter(t=>!t.done&&isToday(t.due));
-
   if(overdue.length===0&&dueToday.length===0) return;
   const dismissKey = 'hrflow_notif_dismissed';
   const dismissed = localStorage.getItem(dismissKey);
@@ -195,7 +190,6 @@ function dismissNotif(){
   localStorage.setItem('hrflow_notif_dismissed', new Date().toISOString().split('T')[0]);
 }
 
-// ── SEARCH & FILTER ───────────────────────────────────────────
 function getFilteredTasks(){
   return tasks.filter(t=>{
     const q=searchQuery.toLowerCase();
@@ -216,6 +210,8 @@ function clearFilters(){
   searchQuery='';filterProject='';filterPrio='';filterStatus='all';
   const si=document.getElementById('search-input');
   if(si)si.value='';
+  const topbarSearch = document.getElementById('topbar-search');
+  if(topbarSearch) topbarSearch.value = '';
   render();
 }
 
@@ -250,7 +246,6 @@ function renderFilterBar(){
   </div>`;
 }
 
-// ── PROJECT MODAL LOGIC ───────────────────────────────────────
 function openProjModal() {
   document.getElementById('p-name').value = '';
   document.getElementById('p-deadline').value = '';
@@ -262,22 +257,17 @@ function openProjModal() {
 async function saveProject() {
   const name = document.getElementById('p-name').value.trim();
   if (!name) return;
-  
   const color = document.getElementById('p-color').value;
   const deadlineVal = document.getElementById('p-deadline').value;
-  
   let deadline = deadlineVal;
   if (deadlineVal) {
     const d = new Date(deadlineVal + '-01');
     deadline = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   }
-
   const proj = { id: 'proj_' + Date.now(), name, color, totalTasks: 0, doneTasks: 0, deadline };
-  
   projects.push(proj);
   document.getElementById('proj-modal').style.display = 'none';
   render();
-  
   if (typeof showDBStatus === 'function') showDBStatus('Menyimpan project...');
   await dbPost({action: 'addProject', project: proj});
   if (typeof hideDBStatus === 'function') hideDBStatus();
