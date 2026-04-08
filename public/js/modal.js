@@ -115,6 +115,8 @@ function openTaskDetail(id){
         </div>
       </div>
 
+      ${renderSubtasks(t.id)}
+
       <div class="task-section">
         <div class="task-section-title">📝 Deskripsi & Catatan</div>
         <textarea class="desc-area" id="task-desc-${t.id}" placeholder="Tambahkan deskripsi, catatan, atau konteks task ini..."
