@@ -1,6 +1,6 @@
 // ============================================================
 // HRFlow — RENDER.JS
-// Render semua views + AI Tools + KPI Dashboard
+// Render semua views + AI Tools + KPI Dashboard + Glosarium
 // ============================================================
 
 function render(){
@@ -159,11 +159,9 @@ function render(){
     </div>`;
 if(!newsItems.length&&!newsLoading)fetchNews();
 
-// ── HALAMAN BARU: KPI & HISTORY ───────────────────────────────────────
-  } else if(view==='kpi') {
+} else if(view==='kpi') {
     document.getElementById('pg-sub').textContent = 'Executive Dashboard & Task Tracking';
     
-    // Gabungin task yg done di dashboard sama task yg udah di archive
     const allDoneTasks = [
       ...tasks.filter(t => t.done && t.actualStart && t.completedAt),
       ...archive.filter(t => t.actualStart && t.completedAt)
@@ -176,7 +174,6 @@ if(!newsItems.length&&!newsLoading)fetchNews();
     let filteredTasks = allDoneTasks;
     let filterLabel = "Semua Waktu";
 
-    // Logic Filtering Waktu
     if(kpiFilter === 'this_month') {
       filteredTasks = allDoneTasks.filter(t => new Date(t.completedAt).getMonth() === currMonth && new Date(t.completedAt).getFullYear() === currYear);
       filterLabel = "Bulan Ini";
@@ -196,7 +193,6 @@ if(!newsItems.length&&!newsLoading)fetchNews();
       filterLabel = `Q${q} ${currYear}`;
     }
 
-    // Kalkulasi Metrik Utama
     const totalDone = filteredTasks.length;
     let avgCycleTime = 0;
     let onTimeCount = 0;
@@ -216,7 +212,6 @@ if(!newsItems.length&&!newsLoading)fetchNews();
     }
     const onTimeRate = totalDone > 0 ? Math.round((onTimeCount / totalDone) * 100) : 0;
 
-    // Breakdown per project
     const projBreakdown = {};
     filteredTasks.forEach(t => { projBreakdown[t.project] = (projBreakdown[t.project] || 0) + 1; });
     const projBars = Object.keys(projBreakdown).sort((a,b)=>projBreakdown[b]-projBreakdown[a]).map(pName => {
@@ -229,7 +224,6 @@ if(!newsItems.length&&!newsLoading)fetchNews();
        </div>`;
     }).join('');
 
-    // Tabel Log History
     const tableRows = filteredTasks.sort((a,b)=>new Date(b.completedAt)-new Date(a.completedAt)).map(t => {
       const start = new Date(t.actualStart);
       const end = new Date(t.completedAt);
@@ -247,7 +241,6 @@ if(!newsItems.length&&!newsLoading)fetchNews();
       </tr>`;
     }).join('');
 
-    // Inject HTML buat halaman KPI
     c.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <h2 style="font-size:15px;font-weight:600;color:var(--tx1)">Executive Summary</h2>
@@ -275,7 +268,6 @@ if(!newsItems.length&&!newsLoading)fetchNews();
           ${projBars || '<div style="font-size:12px;color:var(--tx3);text-align:center;padding:20px;">Tidak ada data</div>'}
         </div>
       </div>
-
       <div class="panel">
         <div class="ph"><span class="ph-title">Task Log & History</span></div>
         <div style="overflow-x:auto;">
@@ -296,13 +288,68 @@ if(!newsItems.length&&!newsLoading)fetchNews();
       </div>
     </div>
     `;
+
+// ── HALAMAN BARU: GLOSARIUM ───────────────────────────────────────
+  } else if (view === 'glosarium') {
+    document.getElementById('pg-sub').textContent = 'Panduan penamaan task dan struktur data untuk AI Analysis';
+    c.innerHTML = `
+    <div class="panel">
+      <div class="ph"><span class="ph-title" style="font-size:14px;">📖 Panduan Naming Convention (Prefix System)</span></div>
+      <div style="padding: 24px; font-size: 13px; color: var(--tx2); line-height: 1.6;">
+        <p style="margin-bottom: 20px; font-size: 13.5px;">Gunakan <strong>Prefix (Awalan)</strong> berupa kurung siku <code>[KEYWORD]</code> pada setiap nama task baru. Ini sangat penting agar <strong>AI (Gemini) dapat menganalisis pola kerja</strong>, durasi, dan performa kamu dengan akurat.</p>
+
+        <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+          <div style="border: 1px solid var(--bd); border-radius: 8px; padding: 16px; background: var(--bg2);">
+            <h4 style="color: var(--tx1); font-size: 13px; margin-bottom: 12px; font-weight: 600;">🔄 Operasional & Admin</h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[RECAP]')">[RECAP]</button> <span style="font-size:11.5px">Rekap harian, cuti, nippo.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[BPJS]')">[BPJS]</button> <span style="font-size:11.5px">Update KS/TK, notes salary.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[ADMIN]')">[ADMIN]</button> <span style="font-size:11.5px">Dokumen, email internal.</span></li>
+            </ul>
+          </div>
+
+          <div style="border: 1px solid var(--bd); border-radius: 8px; padding: 16px; background: var(--bg2);">
+            <h4 style="color: var(--tx1); font-size: 13px; margin-bottom: 12px; font-weight: 600;">👥 Employee Relations</h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[SP]')">[SP]</button> <span style="font-size:11.5px">Surat Peringatan & Log.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[EVAL]')">[EVAL]</button> <span style="font-size:11.5px">Promosi, Demosi, Salary Adjustment.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[OFFBOARDING]')">[OFFBOARDING]</button> <span style="font-size:11.5px">Resign, Paklaring.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[ONBOARDING]')">[ONBOARDING]</button> <span style="font-size:11.5px">Karyawan baru join.</span></li>
+            </ul>
+          </div>
+
+          <div style="border: 1px solid var(--bd); border-radius: 8px; padding: 16px; background: var(--bg2);">
+            <h4 style="color: var(--tx1); font-size: 13px; margin-bottom: 12px; font-weight: 600;">🎯 Recruitment Pipeline</h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[RECRUIT]')">[RECRUIT]</button> <span style="font-size:11.5px">General hiring task.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[SCREENING]')">[SCREENING]</button> <span style="font-size:11.5px">Cek CV & Portofolio.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[INTERVIEW]')">[INTERVIEW]</button> <span style="font-size:11.5px">Jadwal & hasil interview.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[OFFERING]')">[OFFERING]</button> <span style="font-size:11.5px">Pembuatan kontrak.</span></li>
+            </ul>
+          </div>
+
+          <div style="border: 1px solid var(--bd); border-radius: 8px; padding: 16px; background: var(--bg2);">
+            <h4 style="color: var(--tx1); font-size: 13px; margin-bottom: 12px; font-weight: 600;">🚀 Strategic & Culture</h4>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[PROJECT]')">[PROJECT]</button> <span style="font-size:11.5px">Task project besar (e.g. Web Karir).</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[CULTURE]')">[CULTURE]</button> <span style="font-size:11.5px">Ultah, event internal, greeting.</span></li>
+              <li style="margin-bottom: 8px;"><button class="chip" style="font-size:10px; cursor:pointer;" onclick="filterByTag('[SOP]')">[SOP]</button> <span style="font-size:11.5px">Pembuatan/update rule HR.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top: 20px; padding: 14px; background: var(--blu-bg); color: var(--blu-tx); border-radius: 8px; font-size: 12.5px; line-height: 1.5; border: 1px solid rgba(46, 125, 214, 0.2);">
+          💡 <strong>Tips Interaktif:</strong> Klik salah satu tag/chip di atas untuk langsung memfilter dan melihat daftar task terkait di halaman "My Tasks". Jika kamu menambah task baru menggunakan tag yang konsisten, fitur <em>AI Auto-Predict</em> akan langsung menebak estimasi durasi pekerjaanmu!
+        </div>
+      </div>
+    </div>
+    `;
   }
 }
 
 function openNewsDetail(index) {
   const news = newsItems[index];
   if(!news) return;
-  
   document.getElementById('dm-title').textContent = news.title;
   if (news.category === 'System') {
     document.getElementById('dm-meta').innerHTML = `<span class="ncat" style="${catStyle['System']}">${news.category}</span>`;
@@ -330,7 +377,6 @@ async function generateNewsletter(){
     document.getElementById('dm-content').innerHTML = '<div class="loading-pulse">Generating konten...</div>';
     document.getElementById('dm-action-container').innerHTML = '';
     const result = await callGemini(prompt, false);
-    
     document.getElementById('dm-title').textContent = "📧 Daily HC Newsletter";
     document.getElementById('dm-meta').textContent = "Dikurasi khusus untuk Araw oleh Gemini AI";
     document.getElementById('dm-content').textContent = result;
@@ -345,11 +391,9 @@ async function generateNewsletter(){
   }
 }
 
-// ── AI WEEKLY KPI REPORT ───────────────────────────────────────
 async function generateWeeklyReport() {
   const doneTasks = tasks.filter(t => t.done && t.actualStart && t.completedAt);
   const openTasks = tasks.filter(t => !t.done);
-  
   let avgTime = 0;
   if (doneTasks.length > 0) {
     const totalDays = doneTasks.reduce((sum, t) => {
@@ -359,18 +403,14 @@ async function generateWeeklyReport() {
     }, 0);
     avgTime = (totalDays / doneTasks.length).toFixed(1);
   }
-  
   const prompt = `Buatkan evaluasi performa mingguan (Weekly Performance Report) bergaya Project Manager untuk Araw.\n\nData minggu ini:\n- Task selesai: ${doneTasks.length}\n- Rata-rata kecepatan (Cycle Time): ${avgTime} hari/task\n- Sisa task terbuka: ${openTasks.length}\n\nBerikan 3 poin:\n1. Apresiasi kinerja\n2. Analisa singkat (apakah kecepatan ${avgTime} hari per task ini bagus)\n3. Saran untuk sisa ${openTasks.length} task terbuka.\n\nGunakan Bahasa Indonesia, santai tapi profesional, max 200 kata.`;
-  
   try {
     document.getElementById('detail-modal').style.display = 'flex';
     document.getElementById('dm-title').textContent = "Membuat Weekly Report...";
     document.getElementById('dm-meta').textContent = "Gemini sedang menganalisa data KPI kamu ✦";
     document.getElementById('dm-content').innerHTML = '<div class="loading-pulse">Menganalisa performa kecepatan pengerjaan...</div>';
     document.getElementById('dm-action-container').innerHTML = '';
-    
     const result = await callGemini(prompt, false);
-    
     document.getElementById('dm-title').textContent = "📊 Weekly Performance Report";
     document.getElementById('dm-meta').textContent = "AI Analysis by Gemini";
     document.getElementById('dm-content').textContent = result;
