@@ -46,8 +46,8 @@ function renderSubtasks(tid) {
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <div style="font-size:11.5px; font-weight:600; color:var(--tx3); text-transform:uppercase; letter-spacing:0.05em;">☑ Action Items / Checklist</div>
       <div style="display:flex; gap:6px;">
-        <button class="btn" style="font-size:10.5px; padding:3px 8px; background:var(--bg2);" onclick="copySubtasks('${tid}')">📋 Copas dari History</button>
-        <button class="btn gem" style="font-size:10.5px; padding:3px 8px;" onclick="generateSubtasksAI('${tid}', event)">✦ Breakdown AI</button>
+        <button type="button" class="btn" style="font-size:10.5px; padding:3px 8px; background:var(--bg2);" onclick="copySubtasks('${tid}')">📋 Copas dari History</button>
+        <button type="button" class="btn gem" style="font-size:10.5px; padding:3px 8px;" onclick="generateSubtasksAI('${tid}', event)">✦ Breakdown AI</button>
       </div>
     </div>`;
 
@@ -61,13 +61,13 @@ function renderSubtasks(tid) {
     <div style="display:flex; align-items:center; gap:10px; font-size:13px; color:${s.done ? 'var(--tx3)' : 'var(--tx1)'}; text-decoration:${s.done ? 'line-through' : 'none'}; background:var(--bg2); padding:8px 12px; border-radius:6px; border:1px solid var(--bd);">
       <input type="checkbox" ${s.done ? 'checked' : ''} onclick="toggleSubtask('${tid}', ${i})" style="cursor:pointer; width:15px; height:15px; accent-color:var(--acc);">
       <span style="flex:1;">${s.title}</span>
-      <button onclick="deleteSubtask('${tid}', ${i})" style="background:none; border:none; cursor:pointer; color:var(--red-tx); opacity:0.6; font-size:12px;" title="Hapus">✕</button>
+      <button type="button" onclick="deleteSubtask('${tid}', ${i})" style="background:none; border:none; cursor:pointer; color:var(--red-tx); opacity:0.6; font-size:12px;" title="Hapus">✕</button>
     </div>`;
   });
   html += `</div>
     <div style="display:flex; gap:8px;">
       <input type="text" id="new-st-${tid}" placeholder="Ketik subtask baru lalu Enter..." style="flex:1; border:1px solid var(--bd); background:var(--bg1); border-radius:6px; padding:8px 12px; font-size:12.5px; color:var(--tx1); outline:none;" onkeydown="if(event.key==='Enter') addSubtask('${tid}')">
-      <button class="btn primary" onclick="addSubtask('${tid}')" style="font-size:11.5px; padding:0 14px;">+ Add</button>
+      <button type="button" class="btn primary" onclick="addSubtask('${tid}')" style="font-size:11.5px; padding:0 14px;">+ Add</button>
     </div>
   </div>`;
   
@@ -76,15 +76,21 @@ function renderSubtasks(tid) {
 
 async function addSubtask(tid) {
   const t = tasks.find(x => String(x.id) === String(tid));
+  if(!t) { alert("Error: Data Task tidak ditemukan!"); return; }
+
   const inp = document.getElementById(`new-st-${tid}`);
-  if(!t || !inp || !inp.value.trim()) return;
+  if(!inp) { alert("Error: Kotak input gagal dideteksi."); return; }
+
+  const val = inp.value.trim();
+  if(!val) { alert("Isi checklist-nya dulu ya!"); return; }
 
   if(!t.subtasks) t.subtasks = [];
-  t.subtasks.push({ title: inp.value.trim(), done: false });
+  t.subtasks.push({ title: val, done: false });
   inp.value = '';
   
   updateTaskProgress(t);
   if(typeof openTaskDetail === 'function') openTaskDetail(tid); 
+  if(typeof render === 'function') render(); 
   await dbPost({action:'updateTask', task:t});
 }
 
