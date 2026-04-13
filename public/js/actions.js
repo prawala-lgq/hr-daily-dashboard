@@ -42,7 +42,8 @@ function renderSubtasks(tid) {
   const doneCnt = subs.filter(s => s.done).length;
   const pct = subs.length ? Math.round((doneCnt / subs.length) * 100) : 0;
 
-  let html = `<div style="margin-top:20px; margin-bottom:20px;">
+  // FIX BLINK: Tambahkan id="st-wrapper-..." sebagai bungkus utama
+  let html = `<div id="st-wrapper-${tid}" style="margin-top:20px; margin-bottom:20px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
       <div style="font-size:11.5px; font-weight:600; color:var(--tx3); text-transform:uppercase; letter-spacing:0.05em;">☑ Action Items / Checklist</div>
       <div style="display:flex; gap:6px;">
@@ -74,23 +75,40 @@ function renderSubtasks(tid) {
   return html;
 }
 
+// FIX BLINK: Fungsi baru buat update checklist doang secara smooth tanpa ngerusak sidebar
+function refreshSubtasksUI(tid, focusInput = false) {
+  const wrapper = document.getElementById(`st-wrapper-${tid}`);
+  if (wrapper) {
+    wrapper.outerHTML = renderSubtasks(tid);
+    if (focusInput) {
+      const inp = document.getElementById(`new-st-${tid}`);
+      if (inp) inp.focus(); // Biar kursor tetep kedip di kotak input setelah ngetik
+    }
+  } else {
+    if(typeof openTaskDetail === 'function') openTaskDetail(tid);
+  }
+  if(typeof render === 'function') render(); // Update progress bar di halaman utama
+}
+
 async function addSubtask(tid) {
   const t = tasks.find(x => String(x.id) === String(tid));
   if(!t) { alert("Error: Data Task tidak ditemukan!"); return; }
 
   const inp = document.getElementById(`new-st-${tid}`);
-  if(!inp) { alert("Error: Kotak input gagal dideteksi."); return; }
+  if(!inp) return;
 
   const val = inp.value.trim();
-  if(!val) { alert("Isi checklist-nya dulu ya!"); return; }
+  if(!val) return;
 
   if(!t.subtasks) t.subtasks = [];
   t.subtasks.push({ title: val, done: false });
   inp.value = '';
   
   updateTaskProgress(t);
-  if(typeof openTaskDetail === 'function') openTaskDetail(tid); 
-  if(typeof render === 'function') render(); 
+  
+  // Pakai refresh smooth, bukan openTaskDetail
+  refreshSubtasksUI(tid, true); 
+  
   await dbPost({action:'updateTask', task:t});
 }
 
@@ -101,8 +119,9 @@ async function toggleSubtask(tid, idx) {
   t.subtasks[idx].done = !t.subtasks[idx].done;
   updateTaskProgress(t);
   
-  if(typeof openTaskDetail === 'function') openTaskDetail(tid); 
-  render(); 
+  // Pakai refresh smooth
+  refreshSubtasksUI(tid, false);
+  
   await dbPost({action:'updateTask', task:t});
 }
 
@@ -113,7 +132,9 @@ async function deleteSubtask(tid, idx) {
   t.subtasks.splice(idx, 1);
   updateTaskProgress(t);
   
-  if(typeof openTaskDetail === 'function') openTaskDetail(tid);
+  // Pakai refresh smooth
+  refreshSubtasksUI(tid, false);
+  
   await dbPost({action:'updateTask', task:t});
 }
 
@@ -164,7 +185,9 @@ async function copySubtasks(tid) {
   });
   
   updateTaskProgress(t);
-  if(typeof openTaskDetail === 'function') openTaskDetail(tid);
+  
+  refreshSubtasksUI(tid, false);
+  
   await dbPost({action:'updateTask', task:t});
 }
 
@@ -183,7 +206,6 @@ async function generateSubtasksAI(tid, event) {
   
   try {
     let result = await callGemini(prompt, false);
-    // Bersihkan hasil jika AI ngeyel pakai markdown JSON
     result = result.replace(/```json/gi, '').replace(/```/g, '').trim();
     const newSubs = JSON.parse(result);
     
@@ -191,7 +213,9 @@ async function generateSubtasksAI(tid, event) {
     newSubs.forEach(st => t.subtasks.push({ title: st, done: false }));
     
     updateTaskProgress(t);
-    if(typeof openTaskDetail === 'function') openTaskDetail(tid);
+    
+    refreshSubtasksUI(tid, false);
+    
     await dbPost({action:'updateTask', task:t});
     
   } catch(e) {
